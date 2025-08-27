@@ -6,11 +6,11 @@ package Excepciones.AlquileresExcepciones;
 
 /**
  *
- * @author Eduard Salas Murillo
+ * @author je110
  */
-public class AlquilerFinalizadoExcepcion extends Exception {
+public class TarifaNoValidaExcepcion extends Exception {
 
-    public AlquilerFinalizadoExcepcion() {
+    public TarifaNoValidaExcepcion() {
         super();
     }
     
