@@ -6,8 +6,8 @@ package Excepciones.EmpleadosExcepciones;
 
 /**
  *
- * @author Eduard Salas Murillo
+ * @author samue
  */
-public class NewClass {
+public class EmpleadoSiExiste {
     
 }
