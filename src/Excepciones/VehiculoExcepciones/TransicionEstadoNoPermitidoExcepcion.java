@@ -6,8 +6,10 @@ package Excepciones.VehiculoExcepciones;
 
 /**
  *
- * @author Eduard Salas Murillo
+ * @author Valdelomaar
  */
-public class NewClass {
-    
+public class TransicionEstadoNoPermitidoExcepcion extends Exception {
+     public TransicionEstadoNoPermitidoExcepcion() {
+        super();
+    }
 }
