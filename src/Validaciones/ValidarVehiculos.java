@@ -4,15 +4,15 @@ package Validaciones;
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+package Validaciones;
 
 
 import Entidades.EstadoVehiculos;
 import Entidades.TipoVehiculo;
 import Excepciones.VehiculoExcepciones.AñoIncorrectoExcepcion;
-import Excepciones.VehiculoExcepciones.EstadoInvalidoExcepcion;
 import Excepciones.VehiculoExcepciones.CampoVacioExcepcion;
+import Excepciones.VehiculoExcepciones.EstadoInvalidoExcepcion;
 import Excepciones.VehiculoExcepciones.PlacaInvalidaExcepcion;
-
 import java.time.Year;
 import java.util.regex.Pattern;
 
@@ -21,10 +21,13 @@ import java.util.regex.Pattern;
  * @author Valdelomaar
  */
 public class ValidarVehiculos {
-    
     private static final Pattern PLACA_REGEX = Pattern.compile("^[A-Z0-9-]{5,10}$");
     private static final int ANTIGUEDAD_MAX_ANIOS = 20;
-
+/**
+ *
+ * @author Valdelomaar
+ */ 
+    
     public static String obligatorio(String valor) throws CampoVacioExcepcion {
         if (valor == null || valor.trim().isEmpty()) throw new CampoVacioExcepcion();
         return valor.trim();
@@ -54,3 +57,4 @@ public class ValidarVehiculos {
     }
     
 }
+
