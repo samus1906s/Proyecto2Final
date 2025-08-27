@@ -9,5 +9,17 @@ package Entidades;
  * @author Valdelomaar
  */
 public enum EstadoVehiculos {
-    
+    DISPONIBLE("Disponible"),
+    EN_ALQUILER("En alquiler"),
+    EN_MANTENIMIENTO("En mantenimiento");
+
+    private final String etiqueta;
+
+    EstadoVehiculos(String etiqueta) {
+        this.etiqueta = etiqueta;
+    }
+
+    public String getEtiqueta() {
+        return etiqueta;
+    } 
 }
