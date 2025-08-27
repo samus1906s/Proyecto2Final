@@ -12,7 +12,7 @@ import Excepciones.VehiculoExcepciones.TransicionEstadoNoPermitidoExcepcion;
 import Excepciones.VehiculoExcepciones.EstadoInvalidoExcepcion;
 import Excepciones.VehiculoExcepciones.CampoVacioExcepcion;
 import Excepciones.VehiculoExcepciones.PlacaInvalidaExcepcion;
-import Validaciones.ValidarVehiculo;
+import Validaciones.ValidarVehiculos;
 import java.util.Objects;
 
 /**
@@ -29,14 +29,14 @@ public class Vehiculos {
 
     public Vehiculos(String placa, String marca, String modelo, int anio, TipoVehiculo tipo, EstadoVehiculos estadoInicial) 
         throws PlacaInvalidaExcepcion, CampoVacioExcepcion, AñoIncorrectoExcepcion, EstadoInvalidoExcepcion {
-    this.placa  = ValidarVehiculo.placa(placa);
-    this.marca  = ValidarVehiculo.obligatorio(marca);
-    this.modelo = ValidarVehiculo.obligatorio(modelo);
-    this.anio   = ValidarVehiculo.anio(anio);
-    this.tipo   = ValidarVehiculo.tipo(tipo);
+    this.placa  = ValidarVehiculos.placa(placa);
+    this.marca  = ValidarVehiculos.obligatorio(marca);
+    this.modelo = ValidarVehiculos.obligatorio(modelo);
+    this.anio   = ValidarVehiculos.anio(anio);
+    this.tipo   = ValidarVehiculos.tipo(tipo);
     this.estado = (estadoInicial == null)
         ? EstadoVehiculos.DISPONIBLE
-        : ValidarVehiculo.estado(estadoInicial);
+        : ValidarVehiculos.estado(estadoInicial);
     }
     
     public String getPlaca() {
@@ -74,7 +74,7 @@ public class Vehiculos {
 
 
     public void setEstado(EstadoVehiculos nuevoEstado) throws TransicionEstadoNoPermitidoExcepcion, EstadoInvalidoExcepcion {
-        EstadoVehiculos destino = ValidarVehiculo.estado(nuevoEstado);
+        EstadoVehiculos destino = ValidarVehiculos.estado(nuevoEstado);
         if (!puedeCambiarAEstado(this.estado, destino)) {
             throw new TransicionEstadoNoPermitidoExcepcion();
         }

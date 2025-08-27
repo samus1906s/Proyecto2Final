@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  *
  * @author Valdelomaar
  */
-public class ValidarVehiculo {
+public class ValidarVehiculos {
     private static final Pattern PLACA_REGEX = Pattern.compile("^[A-Z0-9-]{5,10}$");
     private static final int ANTIGUEDAD_MAX_ANIOS = 20;
 /**
