@@ -11,6 +11,7 @@ import Entidades.Vehiculos;
 import Interfaces.Listas;
 import Validaciones.ValidarReservas;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
@@ -108,7 +109,7 @@ public class GestionReserva implements Listas <Reserva> {
                      Alquiler nuevoAlquiler = new Alquiler(
                      reservaAConfirmar,
                      tarifaDiaria,
-                     clientes,
+                     new ArrayList<>(clientes.values()),
                      vehiculos
                     );
                   return nuevoAlquiler;

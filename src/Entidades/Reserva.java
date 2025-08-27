@@ -14,6 +14,7 @@ import Excepciones.ReservaExcepciones.FechaInicioInvalida;
 import Excepciones.ReservaExcepciones.FechasDeReservasIncompletas;
 import Excepciones.VehiculoExcepciones.VehiculoNoDisponible;
 import Excepciones.VehiculoExcepciones.VehiculoNoEncontrado;
+import java.util.List;
 import java.util.Map;
 /**
  *
@@ -60,7 +61,7 @@ public class Reserva {
         return estado;
     }
 
-    public Reserva(int idReserva, Cliente cliente, TipoVehiculo tipoVehiculo, Vehiculos vehiculo, LocalDate fechaInicio, LocalDate fechaFin, EstadoAlquiler estado, Map<String, Cliente> clientes, Map<Integer, Reserva> reservas, Map<String, Vehiculos> vehiculos) throws ClienteNoEncontrado, VehiculoNoEncontrado, FechaInicioInvalida, FechasDeReservasIncompletas, DuracionReservaExcedida,VehiculoNoDisponible {
+    public Reserva(int idReserva,Cliente cliente, TipoVehiculo tipoVehiculo, Vehiculos vehiculo, LocalDate fechaInicio, LocalDate fechaFin, EstadoAlquiler estado, Map<Integer, Reserva> reservas, Map<String, Vehiculos> vehiculos, List<Cliente> clientes) throws ClienteNoEncontrado, VehiculoNoEncontrado, FechaInicioInvalida, FechasDeReservasIncompletas, DuracionReservaExcedida,VehiculoNoDisponible {
     
         if (cliente == null || !ValidacionGeneral.ClienteRegistrado(cliente.getCedula(), clientes)) {
          throw new ClienteNoEncontrado();
