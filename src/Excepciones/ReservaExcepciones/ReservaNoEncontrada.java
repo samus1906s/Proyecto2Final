@@ -8,6 +8,10 @@ package Excepciones.ReservaExcepciones;
  *
  * @author Eduard Salas Murillo
  */
-public class NewClass {
+public class ReservaNoEncontrada extends Exception{
+
+    public ReservaNoEncontrada() {
+        super();
+    }
     
 }
