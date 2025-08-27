@@ -13,16 +13,33 @@ import javax.swing.ImageIcon;
 public class FrmMenú extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmMenú.class.getName());
-
+    private DesktopConFondo escritorioConFondo;
     /**
      * Creates new form FrmMenú
      */
     public FrmMenú() {
         initComponents();
         ImageIcon iconoFondo = new ImageIcon(getClass().getResource("/Icons/IconsProyecto2/FondoDesktopPane.png"));
-        DesktopConFondo escritorioConFondo = new DesktopConFondo(iconoFondo);
+        escritorioConFondo = new DesktopConFondo(iconoFondo);
         
         setContentPane(escritorioConFondo);
+        escritorioConFondo.setLayout(null);
+    }
+    
+    private void abrirInternal(javax.swing.JInternalFrame frame) {
+        for (javax.swing.JInternalFrame f : escritorioConFondo.getAllFrames()) {
+            if (f.getClass().equals(frame.getClass())) {
+                try {
+                    f.setIcon(false);
+                    f.setSelected(true);
+                    f.toFront();
+                } catch (Exception ignored) {}
+                return;
+            }
+        }
+        escritorioConFondo.add(frame);
+        frame.setVisible(true);
+        try { frame.setSelected(true); } catch (Exception ignored) {}
     }
 
     /**
@@ -34,77 +51,86 @@ public class FrmMenú extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jDesktopPane1 = new javax.swing.JDesktopPane();
-        jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenuItem2 = new javax.swing.JMenuItem();
-        jMenuItem3 = new javax.swing.JMenuItem();
-        jMenuItem4 = new javax.swing.JMenuItem();
-        jMenuItem5 = new javax.swing.JMenuItem();
+        Escritorio = new javax.swing.JDesktopPane();
+        BarraMenu = new javax.swing.JMenuBar();
+        MenuOpciones = new javax.swing.JMenu();
+        GestorClientes = new javax.swing.JMenuItem();
+        GestorVehiculos = new javax.swing.JMenuItem();
+        GestorEmpleados = new javax.swing.JMenuItem();
+        GestorReservas = new javax.swing.JMenuItem();
+        GestorAlquileres = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        javax.swing.GroupLayout jDesktopPane1Layout = new javax.swing.GroupLayout(jDesktopPane1);
-        jDesktopPane1.setLayout(jDesktopPane1Layout);
-        jDesktopPane1Layout.setHorizontalGroup(
-            jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout EscritorioLayout = new javax.swing.GroupLayout(Escritorio);
+        Escritorio.setLayout(EscritorioLayout);
+        EscritorioLayout.setHorizontalGroup(
+            EscritorioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 752, Short.MAX_VALUE)
         );
-        jDesktopPane1Layout.setVerticalGroup(
-            jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        EscritorioLayout.setVerticalGroup(
+            EscritorioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 355, Short.MAX_VALUE)
         );
 
-        jMenu1.setText("Gestiones del Sistema de Control y Alquiler de Vehiculos");
-        jMenu1.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
+        MenuOpciones.setText("Gestiones del Sistema de Control y Alquiler de Vehiculos");
+        MenuOpciones.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
 
-        jMenuItem1.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
-        jMenuItem1.setText("Gestor de Clientes");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+        GestorClientes.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
+        GestorClientes.setText("Gestor de Clientes");
+        GestorClientes.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
+                GestorClientesActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuItem1);
+        MenuOpciones.add(GestorClientes);
 
-        jMenuItem2.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
-        jMenuItem2.setText("Gestor de Vehiculos");
-        jMenu1.add(jMenuItem2);
+        GestorVehiculos.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
+        GestorVehiculos.setText("Gestor de Vehiculos");
+        MenuOpciones.add(GestorVehiculos);
 
-        jMenuItem3.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
-        jMenuItem3.setText("Gestor de Empleados");
-        jMenu1.add(jMenuItem3);
+        GestorEmpleados.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
+        GestorEmpleados.setText("Gestor de Empleados");
+        MenuOpciones.add(GestorEmpleados);
 
-        jMenuItem4.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
-        jMenuItem4.setText("Gestor de Reservas");
-        jMenu1.add(jMenuItem4);
+        GestorReservas.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
+        GestorReservas.setText("Gestor de Reservas");
+        MenuOpciones.add(GestorReservas);
 
-        jMenuItem5.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
-        jMenuItem5.setText("Gestor de Alquileres");
-        jMenu1.add(jMenuItem5);
+        GestorAlquileres.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
+        GestorAlquileres.setText("Gestor de Alquileres");
+        GestorAlquileres.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GestorAlquileresActionPerformed(evt);
+            }
+        });
+        MenuOpciones.add(GestorAlquileres);
 
-        jMenuBar1.add(jMenu1);
+        BarraMenu.add(MenuOpciones);
 
-        setJMenuBar(jMenuBar1);
+        setJMenuBar(BarraMenu);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jDesktopPane1)
+            .addComponent(Escritorio)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jDesktopPane1)
+            .addComponent(Escritorio)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+    private void GestorClientesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GestorClientesActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
+    }//GEN-LAST:event_GestorClientesActionPerformed
+
+    private void GestorAlquileresActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GestorAlquileresActionPerformed
+        abrirInternal(new IntFrmAlquiler());
+    }//GEN-LAST:event_GestorAlquileresActionPerformed
 
     /**
      * @param args the command line arguments
@@ -132,13 +158,13 @@ public class FrmMenú extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JDesktopPane jDesktopPane1;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JMenuItem jMenuItem4;
-    private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JMenuBar BarraMenu;
+    private javax.swing.JDesktopPane Escritorio;
+    private javax.swing.JMenuItem GestorAlquileres;
+    private javax.swing.JMenuItem GestorClientes;
+    private javax.swing.JMenuItem GestorEmpleados;
+    private javax.swing.JMenuItem GestorReservas;
+    private javax.swing.JMenuItem GestorVehiculos;
+    private javax.swing.JMenu MenuOpciones;
     // End of variables declaration//GEN-END:variables
 }
