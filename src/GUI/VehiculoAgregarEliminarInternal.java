@@ -182,6 +182,11 @@ public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame 
         txtPlaca.setFont(new java.awt.Font("Segoe UI", 0, 13)); // NOI18N
         txtPlaca.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         txtPlaca.setToolTipText("Obligatorio");
+        txtPlaca.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtPlacaActionPerformed(evt);
+            }
+        });
 
         jSeparator2.setBackground(new java.awt.Color(0, 0, 0));
         jSeparator2.setForeground(new java.awt.Color(0, 0, 0));
@@ -382,6 +387,7 @@ public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame 
     }//GEN-LAST:event_btnBuscarActionPerformed
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
+        if(!validarPlaca()) return;
         guardar();
     }//GEN-LAST:event_btnGuardarActionPerformed
 
@@ -408,6 +414,10 @@ public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
         eliminar();
     }//GEN-LAST:event_btnEliminarActionPerformed
+
+    private void txtPlacaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtPlacaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtPlacaActionPerformed
 
     private void initUI() {
     
@@ -498,6 +508,26 @@ public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame 
         javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
     }
 }
+    
+    private boolean validarPlaca(){
+    String raw = txtPlaca.getText().trim();
+    String upper = raw.toUpperCase();
+
+    if (upper.matches("^[A-Z]{2}\\d{4}$")) {
+        upper = upper.substring(0, 2) + "-" + upper.substring(2);
+    }
+
+    boolean ok = upper.matches("^[A-Z]{2}-\\d{4}$"); 
+    if (!ok) {
+        javax.swing.JOptionPane.showMessageDialog(this,
+            "Placa inválida. Formato requerido: 2 letras, guion y 4 números (ej: AB-1234).");
+        txtPlaca.requestFocus();
+        txtPlaca.selectAll();
+        return false;
+    }
+    txtPlaca.setText(upper); 
+    return true;
+    }
     
     public void eliminar(){
      try {
