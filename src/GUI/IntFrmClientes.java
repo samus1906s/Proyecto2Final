@@ -9,13 +9,62 @@ package GUI;
  * @author samue
  */
 public class IntFrmClientes extends javax.swing.JInternalFrame {
+   private GestionClientesArrayList lista;
+   private Cliente cliente;
 
     /**
      * Creates new form IntFrmClientes
      */
     public IntFrmClientes() {
         initComponents();
+        lista= new GestionClientesArrayList();
+        cliente = null;
     }
+    
+    private void limpiar(){
+        txtCedula.setText("");
+        txtNombre.setText("");
+        txtFecha.setText("");
+        txtTelefono.setText("");
+        txtCorreo.setText("");
+        txtLicencia.setText("");
+    }
+    
+    private void agregar(){
+        if(!validarDatos()){
+            UtilidadesGUI.mostrarMensajeDeError(this,"Datos no permitidos", "Error");
+            return;
+        }
+          try {
+            String cedula = txtCedula.getText();
+            String nombre = txtNombre.getText();
+            String telefono = txtTelefono.getText();
+            String correo = txtCorreo.getText();
+            String licencia = txtLicencia.getText();
+            LocalDate fecha = LocalDate.parse(txtFecha.getText());
+
+            cliente = new Cliente(cedula, nombre, fecha, telefono, correo, licencia);
+
+            if (!lista.agregar(cliente)) {
+                JOptionPane.showMessageDialog(this, "No se agregó el registro");
+                return;
+            }
+
+        } catch (DateTimeParseException e) {
+            UtilidadesGUI.mostrarMensajeDeError(this, "Formato de fecha incorrecto (use yyyy-MM-dd)", "Error");
+        }
+    }
+    }
+
+    
+    
+    private boolean validarDatos() {
+    return UtilidadesGUI.validarRequiere(
+        txtCedula, txtNombre, txtFecha, txtTelefono, txtCorreo, txtLicencia
+    );
+    
+    
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -37,8 +86,8 @@ public class IntFrmClientes extends javax.swing.JInternalFrame {
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
-        txtCedula2 = new javax.swing.JTextField();
+        tblClientes = new javax.swing.JTable();
+        txtNombre = new javax.swing.JTextField();
         btnEliminar = new javax.swing.JButton();
         btnAgregar = new javax.swing.JButton();
         btnLimpiar = new javax.swing.JButton();
@@ -48,6 +97,7 @@ public class IntFrmClientes extends javax.swing.JInternalFrame {
         txtFecha = new javax.swing.JFormattedTextField();
         txtCorreo = new javax.swing.JFormattedTextField();
         txtLicencia = new javax.swing.JFormattedTextField();
+        btnActualizar = new javax.swing.JButton();
 
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
         setClosable(true);
@@ -115,7 +165,7 @@ public class IntFrmClientes extends javax.swing.JInternalFrame {
         jLabel8.setFont(new java.awt.Font("Baskerville Old Face", 0, 18)); // NOI18N
         jLabel8.setText("Correo:");
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblClientes.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null},
                 {null, null, null, null, null},
@@ -126,10 +176,10 @@ public class IntFrmClientes extends javax.swing.JInternalFrame {
                 "Cedula", "Nombre", "Telefono", "Correo", "Licencia"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tblClientes);
 
-        txtCedula2.setFont(new java.awt.Font("Baskerville Old Face", 0, 24)); // NOI18N
-        txtCedula2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
+        txtNombre.setFont(new java.awt.Font("Baskerville Old Face", 0, 24)); // NOI18N
+        txtNombre.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
 
         btnEliminar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/IconsProyecto2/user_delete_48.png"))); // NOI18N
         btnEliminar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -158,6 +208,9 @@ public class IntFrmClientes extends javax.swing.JInternalFrame {
 
         txtLicencia.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
 
+        btnActualizar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/IconsProyecto2/update-manager.png"))); // NOI18N
+        btnActualizar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -167,7 +220,7 @@ public class IntFrmClientes extends javax.swing.JInternalFrame {
                     .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(txtTelefono)
                     .addComponent(txtCorreo)
-                    .addComponent(txtCedula2)
+                    .addComponent(txtNombre)
                     .addComponent(txtFecha)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -184,11 +237,13 @@ public class IntFrmClientes extends javax.swing.JInternalFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(119, 119, 119)
+                .addGap(49, 49, 49)
                 .addComponent(btnLimpiar, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(128, 128, 128)
+                .addGap(48, 48, 48)
+                .addComponent(btnActualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(60, 60, 60)
                 .addComponent(btnEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(69, 69, 69))
+                .addGap(107, 107, 107))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -201,7 +256,7 @@ public class IntFrmClientes extends javax.swing.JInternalFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(8, 8, 8)
-                        .addComponent(txtCedula2, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(2, 2, 2)
@@ -223,7 +278,8 @@ public class IntFrmClientes extends javax.swing.JInternalFrame {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnLimpiar, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnLimpiar, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnActualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -259,8 +315,43 @@ public class IntFrmClientes extends javax.swing.JInternalFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnAgregarActionPerformed
 
+     /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(FrmAnimals.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(FrmAnimals.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(FrmAnimals.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(FrmAnimals.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new IntFrmClientes().setVisible(true);
+            }
+        });
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnActualizar;
     private javax.swing.JButton btnAgregar;
     private javax.swing.JButton btnEliminar;
     private javax.swing.JButton btnLimpiar;
@@ -275,13 +366,13 @@ public class IntFrmClientes extends javax.swing.JInternalFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JTable tblClientes;
     private javax.swing.JTextField txtBuscar;
     private javax.swing.JFormattedTextField txtCedula;
-    private javax.swing.JTextField txtCedula2;
     private javax.swing.JFormattedTextField txtCorreo;
     private javax.swing.JFormattedTextField txtFecha;
     private javax.swing.JFormattedTextField txtLicencia;
+    private javax.swing.JTextField txtNombre;
     private javax.swing.JFormattedTextField txtTelefono;
     // End of variables declaration//GEN-END:variables
 }

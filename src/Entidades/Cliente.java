@@ -22,7 +22,7 @@ public class Cliente extends Persona {
             this.licenciaconductor = licenciaconductor;
     }
 
-    public Cliente(String licenciaconductor, String cedula, String nombre, LocalDate fechaNacimiento, String telefono, String correo) {
+    public Cliente(String cedula, String nombre, LocalDate fechaNacimiento, String telefono, String correo, String licenciaconductor) {
         super(cedula, nombre, fechaNacimiento, telefono, correo);
         if(validarLicencias(licenciaconductor)) 
         this.licenciaconductor = licenciaconductor;
