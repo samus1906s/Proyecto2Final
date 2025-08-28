@@ -96,6 +96,11 @@ public class FrmMenú extends javax.swing.JFrame {
 
         GestorEmpleados.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
         GestorEmpleados.setText("Gestor de Empleados");
+        GestorEmpleados.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GestorEmpleadosActionPerformed(evt);
+            }
+        });
         MenuOpciones.add(GestorEmpleados);
 
         GestorReservas.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
@@ -137,9 +142,15 @@ public class FrmMenú extends javax.swing.JFrame {
         abrirInternal(new IntFrmAlquiler());
     }//GEN-LAST:event_GestorAlquileresActionPerformed
 
+
     private void GestorVehiculosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GestorVehiculosActionPerformed
         abrirInternal(new VehiculoAgregarEliminarInternal());
     }//GEN-LAST:event_GestorVehiculosActionPerformed
+
+    private void GestorEmpleadosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GestorEmpleadosActionPerformed
+        abrirInternal(new IntFrmEmpleados());
+    }//GEN-LAST:event_GestorEmpleadosActionPerformed
+
 
     /**
      * @param args the command line arguments

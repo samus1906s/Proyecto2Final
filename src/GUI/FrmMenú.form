@@ -41,6 +41,9 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="Gestor de Empleados"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GestorEmpleadosActionPerformed"/>
+              </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="GestorReservas">
               <Properties>
