@@ -26,7 +26,7 @@ public class FrmMenú extends javax.swing.JFrame {
         escritorioConFondo.setLayout(null);
     }
     
-    private void abrirInternal(javax.swing.JInternalFrame frame) {
+    public void abrirInternal(javax.swing.JInternalFrame frame) {
         for (javax.swing.JInternalFrame f : escritorioConFondo.getAllFrames()) {
             if (f.getClass().equals(frame.getClass())) {
                 try {
@@ -87,6 +87,11 @@ public class FrmMenú extends javax.swing.JFrame {
 
         GestorVehiculos.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
         GestorVehiculos.setText("Gestor de Vehiculos");
+        GestorVehiculos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GestorVehiculosActionPerformed(evt);
+            }
+        });
         MenuOpciones.add(GestorVehiculos);
 
         GestorEmpleados.setFont(new java.awt.Font("Bell MT", 1, 18)); // NOI18N
@@ -131,6 +136,10 @@ public class FrmMenú extends javax.swing.JFrame {
     private void GestorAlquileresActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GestorAlquileresActionPerformed
         abrirInternal(new IntFrmAlquiler());
     }//GEN-LAST:event_GestorAlquileresActionPerformed
+
+    private void GestorVehiculosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GestorVehiculosActionPerformed
+        abrirInternal(new VehiculoAgregarEliminarInternal());
+    }//GEN-LAST:event_GestorVehiculosActionPerformed
 
     /**
      * @param args the command line arguments

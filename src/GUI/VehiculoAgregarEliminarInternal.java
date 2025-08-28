@@ -186,7 +186,15 @@ public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame 
         btnEliminar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/IconsProyecto2/eliminar_red_20 (1).png"))); // NOI18N
         btnEliminar.setText("Eliminar");
 
+        btnBuscar.setBackground(new java.awt.Color(0, 102, 255));
+        btnBuscar.setForeground(new java.awt.Color(255, 255, 255));
+        btnBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/IconsProyecto2/search_white_20.png"))); // NOI18N
         btnBuscar.setText("Buscar");
+        btnBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuscarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -201,7 +209,7 @@ public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame 
                 .addGap(18, 18, 18)
                 .addComponent(btnEliminar)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -219,6 +227,27 @@ public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame 
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+         VehiculoListaInternalFrame lista = new VehiculoListaInternalFrame();
+
+    
+    FrmMenú menu = (FrmMenú) javax.swing.SwingUtilities
+            .getAncestorOfClass(FrmMenú.class, this);
+
+    if (menu != null) {
+        menu.abrirInternal(lista);     
+    } else {
+        
+        javax.swing.JDesktopPane dp = getDesktopPane();
+        if (dp != null) {
+            dp.add(lista);
+            lista.setVisible(true);
+            lista.toFront();
+            try { lista.setSelected(true); } catch (Exception ignore) {}
+        }
+    }
+    }//GEN-LAST:event_btnBuscarActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
