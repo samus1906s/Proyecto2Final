@@ -15,7 +15,7 @@ import Excepciones.VehiculoExcepciones.TransicionEstadoNoPermitidoExcepcion;
 import Validaciones.ValidarVehiculos;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.Collections;
 /**
  *
  * @author Valdelomaar
@@ -23,6 +23,10 @@ import java.util.Map;
 public class VehiculosHashMap implements Listas<Vehiculos> {
     
     private final Map<String,Vehiculos> data=new HashMap<>();
+    public Map<String, Vehiculos> getVehiculos() {
+    return Collections.unmodifiableMap(data);
+    }
+    
     private static String key(String placa) throws CampoVacioExcepcion, PlacaInvalidaExcepcion{return ValidarVehiculos.placa(placa);}
 
     @Override

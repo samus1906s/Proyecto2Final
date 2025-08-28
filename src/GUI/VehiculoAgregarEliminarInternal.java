@@ -3,20 +3,102 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JInternalFrame.java to edit this template
  */
 package GUI;
+import Gestiones.VehiculosHashMap;
+import Entidades.Vehiculos;
+import Entidades.TipoVehiculo;
+import Entidades.EstadoVehiculos;
+import Utilidad.UtilidadesGUI;
+
+import java.time.Year;
+import javax.swing.JComboBox;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.JOptionPane;
+
 
 /**
  *
  * @author Valdelomaar
  */
 public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame {
-
+    private final VehiculosHashMap repo = FrmMenú.VEHICULOS;
+    private boolean modoEdicion = false;  
+    private String placaEnEdicion = null;
+    private boolean soloEliminar = false;
     /**
      * Creates new form VehiculoInternalFrame
      */
     public VehiculoAgregarEliminarInternal() {
         initComponents();
+        initUI();
+        postInit();
     }
+    
+   private void postInit() {
+    llenarCombos();
+    int y = java.time.Year.now().getValue();
+    SpinnerAño.setModel(new javax.swing.SpinnerNumberModel(y, y-20, y, 1));
+    btnActualizarEstado.setVisible(false);
+    btnSalirEdicion.setVisible(false);   
+    cancelarEdicion();                   
+}
+   
+    private void setModoEdicion(boolean ed) {
+    
+    txtPlaca.setEditable(!ed);
+    txtMarca.setEditable(!ed);
+    txtModelo.setEditable(!ed);
+    SpinnerAño.setEnabled(!ed);
+    ComboTipo.setEnabled(!ed);
+    ComboEstado.setEnabled(true);
 
+    
+    btnGuardar.setVisible(!ed);
+    btnEliminar.setVisible(!ed);
+    btnLimpiar.setVisible(!ed);          
+    btnActualizarEstado.setVisible(ed);
+    btnSalirEdicion.setVisible(ed);      
+}
+
+    private void cancelarEdicion() {
+    placaEnEdicion = null;
+    setModoEdicion(false);
+}
+
+    public void cargarParaEdicion(Entidades.Vehiculos v) {
+    if (v == null) return;
+    placaEnEdicion = v.getPlaca();               
+
+    txtPlaca.setText(v.getPlaca());
+    txtMarca.setText(v.getMarca());
+    txtModelo.setText(v.getModelo());
+    SpinnerAño.setValue(v.getAnio());
+
+    seleccionarPorTexto(ComboTipo,   v.getTipo()!=null   ? v.getTipo().getEtiqueta()   : "");
+    seleccionarPorTexto(ComboEstado, v.getEstado()!=null ? v.getEstado().getEtiqueta() : "");
+
+    setModoEdicion(true);
+}
+
+    private void seleccionarPorTexto(javax.swing.JComboBox<?> combo, String txt) {
+    for (int i=0;i<combo.getItemCount();i++) {
+        Object it = combo.getItemAt(i);
+        if (it!=null && txt.equalsIgnoreCase(String.valueOf(it))) { combo.setSelectedIndex(i); break; }
+    }
+}
+
+    
+    
+    private void llenarCombos() {
+    ComboTipo.removeAllItems();
+    for (Entidades.TipoVehiculo t : Entidades.TipoVehiculo.values()) {
+        ComboTipo.addItem(t.getEtiqueta());
+    }
+    ComboEstado.removeAllItems();
+    for (Entidades.EstadoVehiculos e : Entidades.EstadoVehiculos.values()) {
+        ComboEstado.addItem(e.getEtiqueta());
+    }
+}
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -45,6 +127,8 @@ public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame 
         btnLimpiar = new javax.swing.JButton();
         btnEliminar = new javax.swing.JButton();
         btnBuscar = new javax.swing.JButton();
+        btnActualizarEstado = new javax.swing.JButton();
+        btnSalirEdicion = new javax.swing.JButton();
 
         jSeparator5.setBackground(new java.awt.Color(0, 0, 0));
         jSeparator5.setForeground(new java.awt.Color(0, 0, 0));
@@ -110,12 +194,27 @@ public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame 
         btnGuardar.setForeground(new java.awt.Color(255, 255, 255));
         btnGuardar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/IconsProyecto2/guardar_white_20.png"))); // NOI18N
         btnGuardar.setText("Guardar");
+        btnGuardar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGuardarActionPerformed(evt);
+            }
+        });
 
         btnLimpiar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/IconsProyecto2/limpiar_blue_20.png"))); // NOI18N
         btnLimpiar.setText("Limpiar");
+        btnLimpiar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLimpiarActionPerformed(evt);
+            }
+        });
 
         btnEliminar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/IconsProyecto2/eliminar_red_20 (1).png"))); // NOI18N
         btnEliminar.setText("Eliminar");
+        btnEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarActionPerformed(evt);
+            }
+        });
 
         btnBuscar.setBackground(new java.awt.Color(0, 102, 255));
         btnBuscar.setForeground(new java.awt.Color(255, 255, 255));
@@ -127,52 +226,69 @@ public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame 
             }
         });
 
+        btnActualizarEstado.setBackground(new java.awt.Color(0, 153, 255));
+        btnActualizarEstado.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/IconsProyecto2/refresh_white_20.png"))); // NOI18N
+        btnActualizarEstado.setText("Actualizar");
+        btnActualizarEstado.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnActualizarEstadoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(254, 254, 254)
-                        .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(lblMarca, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(254, 254, 254)
+                                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(lblMarca, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblTipo, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblPlaca, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblModelo))
-                        .addGap(62, 62, 62)
+                            .addComponent(lblModelo)
+                            .addComponent(btnGuardar, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(txtMarca, javax.swing.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
-                                .addComponent(txtPlaca))
                             .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(39, 39, 39)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(txtModelo)
-                                    .addComponent(ComboTipo, 0, 147, Short.MAX_VALUE))
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                        .addComponent(btnEliminar)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(txtMarca, javax.swing.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
+                                    .addComponent(txtPlaca)))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addGap(41, 41, 41)
-                                        .addComponent(lblAño, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(SpinnerAño))
+                                        .addGap(39, 39, 39)
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(txtModelo)
+                                            .addComponent(ComboTipo, 0, 214, Short.MAX_VALUE)))
                                     .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addGap(35, 35, 35)
-                                        .addComponent(lblEstado, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(ComboEstado, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(47, 47, 47)
-                        .addComponent(btnGuardar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnLimpiar, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(lblTipo, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(16, Short.MAX_VALUE))
+                                        .addGap(18, 18, 18)
+                                        .addComponent(btnLimpiar, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(btnEliminar)))
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addGap(6, 6, 6)
+                                        .addComponent(btnBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(24, 24, 24)
+                                        .addComponent(btnActualizarEstado, javax.swing.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE))
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(lblEstado, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(lblAño, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGap(28, 28, 28)
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(SpinnerAño, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(ComboEstado, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGap(28, 28, 28)))))))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -208,23 +324,37 @@ public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame 
                     .addComponent(btnGuardar)
                     .addComponent(btnLimpiar, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnEliminar)
-                    .addComponent(btnBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnActualizarEstado, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(15, 15, 15)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
+
+        btnSalirEdicion.setText("Salir de edición");
+        btnSalirEdicion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSalirEdicionActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addComponent(btnSalirEdicion)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGap(30, 30, 30)
+                .addComponent(btnSalirEdicion, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(14, 14, 14))
         );
 
         pack();
@@ -251,15 +381,215 @@ public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame 
     }
     }//GEN-LAST:event_btnBuscarActionPerformed
 
+    private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
+        guardar();
+    }//GEN-LAST:event_btnGuardarActionPerformed
 
+    private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
+        limpiarFormulario();
+    }//GEN-LAST:event_btnLimpiarActionPerformed
+
+    private void btnActualizarEstadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarEstadoActionPerformed
+        actualizar();
+}
+
+    private Entidades.EstadoVehiculos estadoSeleccionado() {
+    String s = String.valueOf(ComboEstado.getSelectedItem());
+    for (Entidades.EstadoVehiculos e : Entidades.EstadoVehiculos.values()) {
+        if (e.getEtiqueta().equalsIgnoreCase(s) || e.name().equalsIgnoreCase(s)) return e;
+    }
+    return null;
+    }//GEN-LAST:event_btnActualizarEstadoActionPerformed
+
+    private void btnSalirEdicionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalirEdicionActionPerformed
+        btnLimpiarActionPerformed(null);
+    }//GEN-LAST:event_btnSalirEdicionActionPerformed
+
+    private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
+        eliminar();
+    }//GEN-LAST:event_btnEliminarActionPerformed
+
+    private void initUI() {
+    
+    int y = Year.now().getValue();
+    SpinnerAño.setModel(new SpinnerNumberModel(y, y - 20, y, 1));
+
+    
+    ComboTipo.removeAllItems();
+    for (TipoVehiculo t : TipoVehiculo.values()) {
+        ComboTipo.addItem(t.getEtiqueta());
+    }
+
+    ComboEstado.removeAllItems();
+    for (EstadoVehiculos e : EstadoVehiculos.values()) {
+        ComboEstado.addItem(e.getEtiqueta());
+    }
+}
+
+    private TipoVehiculo tipoSeleccionado() {
+    String s = String.valueOf(ComboTipo.getSelectedItem());
+    for (TipoVehiculo t : TipoVehiculo.values()) {
+        if (t.getEtiqueta().equalsIgnoreCase(s) || t.name().equalsIgnoreCase(s)) return t;
+    }
+    return null;
+}
+
+    private void modoSoloEliminar(boolean on) {
+    soloEliminar = on;
+
+    
+    txtPlaca.setEditable(!on);
+    txtMarca.setEditable(!on);
+    txtModelo.setEditable(!on);
+    SpinnerAño.setEnabled(!on);
+    ComboTipo.setEnabled(!on);
+    ComboEstado.setEnabled(!on);
+
+    
+    btnGuardar.setVisible(!on);
+    btnActualizarEstado.setVisible(false); 
+    if (btnSalirEdicion != null) btnSalirEdicion.setVisible(false);
+
+    btnEliminar.setVisible(true);
+    btnLimpiar.setVisible(true);
+    btnLimpiar.setText(on ? "Cancelar" : "Limpiar");
+}
+    
+    private void limpiarFormulario() {
+      txtPlaca.setText("");
+    txtMarca.setText("");
+    txtModelo.setText("");
+    SpinnerAño.setValue(java.time.Year.now().getValue());
+    if (ComboTipo.getItemCount()>0)   ComboTipo.setSelectedIndex(0);
+    if (ComboEstado.getItemCount()>0) ComboEstado.setSelectedIndex(0);
+    cancelarEdicion();                
+    txtPlaca.requestFocus();
+}
+    
+    public void guardar(){
+       try {
+        if (placaEnEdicion != null) {                 
+            javax.swing.JOptionPane.showMessageDialog(this,
+                "Estás editando. Usa 'Actualizar estado'.");
+            return;
+        }
+
+        String placa  = txtPlaca.getText().trim().toUpperCase();
+        String marca  = txtMarca.getText().trim();
+        String modelo = txtModelo.getText().trim();
+        if (placa.isEmpty() || marca.isEmpty() || modelo.isEmpty())
+            throw new RuntimeException("Placa, marca y modelo son obligatorios.");
+
+        int anio = (Integer) SpinnerAño.getValue();
+        Entidades.TipoVehiculo tipo = tipoSeleccionado();
+        Entidades.EstadoVehiculos est = estadoSeleccionado();
+        if (tipo == null || est == null) throw new RuntimeException("Seleccione tipo y estado.");
+
+        Entidades.Vehiculos v = new Entidades.Vehiculos(placa, marca, modelo, anio, tipo, est);
+
+        if (!FrmMenú.VEHICULOS.agregar(v))
+            throw new RuntimeException("No se pudo agregar. Revise placa válida/no duplicada y año permitido.");
+
+        javax.swing.JOptionPane.showMessageDialog(this, "Vehículo agregado.");
+        firePropertyChange("vehiculosChanged", false, true);
+        btnLimpiarActionPerformed(null);
+
+    } catch (Exception ex) {
+        javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+    }
+}
+    
+    public void eliminar(){
+     try {
+        String placa = txtPlaca.getText().trim().toUpperCase();
+        if (placa.isEmpty()) {
+            UtilidadesGUI.mostrarMensajeDeError(this, "Digite la placa a eliminar.", "Falta placa");
+            return;
+        }
+        Vehiculos v = repo.buscar(placa);
+        if (v == null) {
+            UtilidadesGUI.mostrarMensajeDeError(this, "No existe un vehículo con esa placa.", "No encontrado");
+            return;
+        }
+        int r = JOptionPane.showConfirmDialog(this, "¿Eliminar el vehículo " + placa + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        if (r != JOptionPane.YES_OPTION) return;
+
+        boolean ok = repo.eliminar(v);
+        if (!ok) {
+            UtilidadesGUI.mostrarMensajeDeError(this, "No se puede eliminar si está EN ALQUILER.", "Operación no permitida");
+            return;
+        }
+        UtilidadesGUI.mostrarMensaje(this, "Vehículo eliminado.", "Listo");
+        limpiarFormulario();
+
+    } catch (Exception ex) {
+        UtilidadesGUI.mostrarMensajeDeError(this, ex.getMessage(), "Error");
+    }
+}
+    
+    public void actualizar(){
+    try {
+        if (placaEnEdicion == null) {
+            JOptionPane.showMessageDialog(this, "No hay vehículo en edición.");
+            return;
+        }
+
+        Entidades.Vehiculos cur = FrmMenú.VEHICULOS.buscar(placaEnEdicion);
+        if (cur == null) {
+            throw new RuntimeException("No se encontró el vehículo.");
+        }
+
+        Entidades.EstadoVehiculos actual = cur.getEstado();
+        Entidades.EstadoVehiculos nuevo  = estadoSeleccionado();
+        if (nuevo == null) {
+            throw new RuntimeException("Seleccione un estado.");
+        }
+
+        
+        if (actual == nuevo) {
+            JOptionPane.showMessageDialog(this,
+                "El estado ya es \"" + actual.getEtiqueta() + "\".");
+            return;
+        }
+
+        
+        if (actual == Entidades.EstadoVehiculos.EN_ALQUILER && nuevo == Entidades.EstadoVehiculos.EN_MANTENIMIENTO) {
+            JOptionPane.showMessageDialog(this,
+                "No puede pasar de 'En alquiler' a 'En mantenimiento'. Finalice el contrato primero.");
+            return;
+        }
+        if (actual == Entidades.EstadoVehiculos.EN_MANTENIMIENTO && nuevo == Entidades.EstadoVehiculos.EN_ALQUILER) {
+            JOptionPane.showMessageDialog(this,
+                "No puede pasar de 'En mantenimiento' a 'En alquiler'. Póngalo 'Disponible' antes.");
+            return;
+        }
+
+        
+        cur.setEstado(nuevo);
+
+        JOptionPane.showMessageDialog(this, "Estado actualizado.");
+        firePropertyChange("vehiculosChanged", false, true);
+        btnLimpiarActionPerformed(null);  // sale de edición
+
+    } catch (Exception ex) {
+       
+        String msg = (ex.getMessage() == null || ex.getMessage().isBlank())
+                ? "No se pudo actualizar el estado. Revise la transición."
+                : ex.getMessage();
+        JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> ComboEstado;
     private javax.swing.JComboBox<String> ComboTipo;
     private javax.swing.JSpinner SpinnerAño;
+    private javax.swing.JButton btnActualizarEstado;
     private javax.swing.JButton btnBuscar;
     private javax.swing.JButton btnEliminar;
     private javax.swing.JButton btnGuardar;
     private javax.swing.JButton btnLimpiar;
+    private javax.swing.JButton btnSalirEdicion;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator5;
