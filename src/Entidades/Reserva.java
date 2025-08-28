@@ -23,11 +23,9 @@ import java.util.Map;
 public class Reserva {
     private int idReserva;
     private Cliente cliente;
-    private TipoVehiculo tipoVehiculo;
     private Vehiculos vehiculo;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
-    private EstadoAlquiler estado;
 
     public int getIdReserva() {
         return idReserva;
@@ -35,10 +33,6 @@ public class Reserva {
 
     public Cliente getCliente() {
         return cliente;
-    }
-
-    public TipoVehiculo getTipoVehiculo() {
-        return tipoVehiculo;
     }
 
     public Vehiculos getVehiculo() {
@@ -57,11 +51,8 @@ public class Reserva {
         return fechaFin;
     }
 
-    public EstadoAlquiler getEstado() {
-        return estado;
-    }
 
-    public Reserva(int idReserva,Cliente cliente, TipoVehiculo tipoVehiculo, Vehiculos vehiculo, LocalDate fechaInicio, LocalDate fechaFin, EstadoAlquiler estado, Map<Integer, Reserva> reservas, Map<String, Vehiculos> vehiculos, List<Cliente> clientes) throws ClienteNoEncontrado, VehiculoNoEncontrado, FechaInicioInvalida, FechasDeReservasIncompletas, DuracionReservaExcedida,VehiculoNoDisponible {
+    public Reserva(int idReserva,Cliente cliente, Vehiculos vehiculo, LocalDate fechaInicio, LocalDate fechaFin, Map<Integer, Reserva> reservas, Map<String, Vehiculos> vehiculos, List<Cliente> clientes) throws ClienteNoEncontrado, VehiculoNoEncontrado, FechaInicioInvalida, FechasDeReservasIncompletas, DuracionReservaExcedida,VehiculoNoDisponible {
     
         if (cliente == null || !ValidacionGeneral.ClienteRegistrado(cliente.getCedula(), clientes)) {
          throw new ClienteNoEncontrado();
@@ -89,10 +80,8 @@ public class Reserva {
     
      this.idReserva = idReserva;
      this.cliente = cliente;
-     this.tipoVehiculo = tipoVehiculo;
      this.vehiculo = vehiculo;
      this.fechaInicio = fechaInicio;
      this.fechaFin = fechaFin;
-     this.estado = estado;
     }
 }
