@@ -10,6 +10,11 @@ import java.util.ArrayList;
 import Interfaces.Listas;
 
 public class GestionClientesArrayList implements Listas<Cliente> {
+    
+    private static String normalizarCedula(String c) {
+        return c == null ? null : c.replaceAll("\\D", "");
+    }
+
     private ArrayList<Cliente> clientes;
 
     public GestionClientesArrayList() {
@@ -22,23 +27,15 @@ public class GestionClientesArrayList implements Listas<Cliente> {
 
     @Override
     public boolean agregar(Cliente cliente) {
-        if (cliente == null || 
+      if (cliente == null || 
             cliente.getCedula() == null || 
             existeClientePorCedula(cliente.getCedula()) ||
-
-            // validar licencia
             cliente.getLicenciaconductor() == null || 
             cliente.getLicenciaconductor().trim().isEmpty() ||
-
-            // validar fecha de nacimiento (edad)
             cliente.getFechaNacimiento() == null ||
             !ValidarPersona.calcularEdad(cliente.getFechaNacimiento())||
-
-            // validar correo
             cliente.getCorreo() == null || 
             !ValidarPersona.ValidarCorreo(cliente.getCorreo()) ||
-
-            // validar teléfono
             cliente.getTelefono() == null || 
             !ValidarPersona.ValidarTelefono(cliente.getTelefono())) {
 
@@ -46,12 +43,12 @@ public class GestionClientesArrayList implements Listas<Cliente> {
         }
 
         clientes.add(cliente);
-        return true;
+        return true;  
     }
 
     @Override
     public boolean eliminar(Cliente cliente) {
-        if (cliente != null && cliente.getCedula() != null) {
+       if (cliente != null && cliente.getCedula() != null) {
             Cliente eliminado = buscar(cliente.getCedula());
             if (eliminado != null) {
                 return clientes.remove(eliminado);
@@ -62,10 +59,12 @@ public class GestionClientesArrayList implements Listas<Cliente> {
 
     @Override
     public Cliente buscar(Object id) {
-        if (id != null) {
+       if (id != null) {
             String cedula = String.valueOf(id);
+            String cNorm = normalizarCedula(cedula);
             for (Cliente cliente : clientes) {
-                if (cliente.getCedula().equals(cedula)) {
+                String kNorm = normalizarCedula(cliente.getCedula());
+                if (cNorm != null && cNorm.equals(kNorm)) {
                     return cliente;
                 }
             }
@@ -74,7 +73,7 @@ public class GestionClientesArrayList implements Listas<Cliente> {
     }
 
     public boolean actualizar(Cliente clienteActualizado) {
-        Cliente c = (clienteActualizado == null || clienteActualizado.getCedula() == null) 
+      Cliente c = (clienteActualizado == null || clienteActualizado.getCedula() == null) 
                 ? null 
                 : buscar(clienteActualizado.getCedula());
 
@@ -90,8 +89,9 @@ public class GestionClientesArrayList implements Listas<Cliente> {
         c.setLicenciaconductor(clienteActualizado.getLicenciaconductor());
         return true;
     }
-
+    
     private boolean existeClientePorCedula(String cedula) {
         return buscar(cedula) != null;
     }
 }
+    

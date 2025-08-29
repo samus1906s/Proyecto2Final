@@ -5,13 +5,10 @@
 package GUI;
 
 import Entidades.Cliente;
+import Gestiones.CompartirDatos;
 import Gestiones.GestionClientesArrayList;
-import Utilidad.UtilDate;
-import Utilidad.UtilidadesGUI;
-import Validaciones.ValidarPersona;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -23,11 +20,11 @@ import javax.swing.table.DefaultTableModel;
 
 
 public class FrmClientes extends javax.swing.JInternalFrame {
-    private GestionClientesArrayList gestionClientes;
+   private GestionClientesArrayList gestionClientes;
     private Cliente cliente;
     private boolean modoEdicion = false;
     private String cedulaEnEdicion = null;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+      private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     
     /**
@@ -35,15 +32,14 @@ public class FrmClientes extends javax.swing.JInternalFrame {
      */
     public FrmClientes() {
         initComponents();
-    this.gestionClientes = new GestionClientesArrayList(); 
+     this.gestionClientes = GUI.FrmMenú.CLIENTES; 
     this.cliente = null;
-        limpiarCampos();
+    limpiarCampos();
     }
 
     
 private void agregarCliente() {
     try {
-        // Capturar datos de los campos
         String cedula   = txtCedula.getText().trim();
         String nombre   = txtNombre.getText().trim();
         String fnacStr  = txtFecha.getText().trim();
@@ -81,12 +77,11 @@ private void agregarCliente() {
             }
 
             JOptionPane.showMessageDialog(this, "Cliente actualizado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            sincronizarConCompartirDatos();
 
-            // Resetear modo edición
             modoEdicion = false;
             cedulaEnEdicion = null;
 
-            // Volver a habilitar campos bloqueados
             txtCedula.setEnabled(true);
             txtNombre.setEnabled(true);
             txtFecha.setEnabled(true);
@@ -101,6 +96,7 @@ private void agregarCliente() {
             }
 
             JOptionPane.showMessageDialog(this, "Cliente agregado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            sincronizarConCompartirDatos();
         }
 
    
@@ -116,12 +112,7 @@ private void agregarCliente() {
 
 
 private boolean validateRequiere(){
-    return !txtCedula.getText().trim().isEmpty() &&
-           !txtNombre.getText().trim().isEmpty() &&
-           !txtCorreo.getText().trim().isEmpty() &&
-           !txtTelefono.getText().trim().isEmpty() &&
-           !txtLicencia.getText().trim().isEmpty() &&
-           !txtFecha.getText().trim().isEmpty();
+    return !txtCedula.getText().trim().isEmpty() && !txtNombre.getText().trim().isEmpty() && !txtCorreo.getText().trim().isEmpty() && !txtTelefono.getText().trim().isEmpty() && !txtLicencia.getText().trim().isEmpty() && !txtFecha.getText().trim().isEmpty();
 }
 
 
@@ -620,4 +611,9 @@ private void actualizarCliente() {
     private javax.swing.JTextField txtNombre;
     private javax.swing.JFormattedTextField txtTelefono;
     // End of variables declaration//GEN-END:variables
+  private void sincronizarConCompartirDatos() {
+        CompartirDatos.listaClientes.clear();
+        CompartirDatos.listaClientes.addAll(this.gestionClientes.getClientes());
+    }
+    
 }
