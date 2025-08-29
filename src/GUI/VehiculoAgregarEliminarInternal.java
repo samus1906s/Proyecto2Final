@@ -20,6 +20,7 @@ import javax.swing.JOptionPane;
  * @author Valdelomaar
  */
 public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame {
+    private boolean modoSoloEliminar = false;
     private final VehiculosHashMap repo = FrmMenú.VEHICULOS;
     private boolean modoEdicion = false;  
     private String placaEnEdicion = null;
@@ -86,7 +87,43 @@ public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame 
     }
 }
 
+    private void setModoSoloEliminar(boolean on) {
+    modoSoloEliminar = on;
+
+    // Todos los campos no editables
+    txtPlaca.setEditable(false);
+    txtMarca.setEditable(false);
+    txtModelo.setEditable(false);
+    SpinnerAño.setEnabled(false);
+    ComboTipo.setEnabled(false);
+    ComboEstado.setEnabled(false);
+
     
+    btnGuardar.setVisible(false);
+    btnActualizarEstado.setVisible(false);
+    btnLimpiar.setVisible(false);
+    btnSalirEdicion.setVisible(false); 
+    btnEliminar.setVisible(true);
+
+    
+    placaEnEdicion = null;
+}
+    
+    public void cargarParaSoloEliminar(Entidades.Vehiculos v) {
+    if (v == null) return;
+
+
+    txtPlaca.setText(v.getPlaca());
+    txtMarca.setText(v.getMarca());
+    txtModelo.setText(v.getModelo());
+    SpinnerAño.setValue(v.getAnio());
+
+    seleccionarPorTexto(ComboTipo,   v.getTipo()   != null ? v.getTipo().getEtiqueta()   : "");
+    seleccionarPorTexto(ComboEstado, v.getEstado() != null ? v.getEstado().getEtiqueta() : "");
+
+
+    setModoSoloEliminar(true);
+}
     
     private void llenarCombos() {
     ComboTipo.removeAllItems();
@@ -444,26 +481,11 @@ public class VehiculoAgregarEliminarInternal extends javax.swing.JInternalFrame 
     return null;
 }
 
-    private void modoSoloEliminar(boolean on) {
-    soloEliminar = on;
-
     
-    txtPlaca.setEditable(!on);
-    txtMarca.setEditable(!on);
-    txtModelo.setEditable(!on);
-    SpinnerAño.setEnabled(!on);
-    ComboTipo.setEnabled(!on);
-    ComboEstado.setEnabled(!on);
-
     
-    btnGuardar.setVisible(!on);
-    btnActualizarEstado.setVisible(false); 
-    if (btnSalirEdicion != null) btnSalirEdicion.setVisible(false);
-
-    btnEliminar.setVisible(true);
-    btnLimpiar.setVisible(true);
-    btnLimpiar.setText(on ? "Cancelar" : "Limpiar");
-}
+    
+    
+    
     
     private void limpiarFormulario() {
       txtPlaca.setText("");

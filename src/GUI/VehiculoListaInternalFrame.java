@@ -49,7 +49,30 @@ public class VehiculoListaInternalFrame extends javax.swing.JInternalFrame {
     cargarTodo();
 }
     
-    
+    private void cargarSoloEliminar(){
+    int vr = tblVehiculos.getSelectedRow();
+    if (vr < 0) { JOptionPane.showMessageDialog(this, "Seleccione una fila."); return; }
+    int mr = tblVehiculos.convertRowIndexToModel(vr);
+    String placa = String.valueOf(((javax.swing.table.DefaultTableModel)tblVehiculos.getModel()).getValueAt(mr, 0));
+
+    Entidades.Vehiculos v = FrmMenú.VEHICULOS.buscar(placa);
+    if (v == null) { JOptionPane.showMessageDialog(this, "No se encontró el vehículo."); return; }
+
+    VehiculoAgregarEliminarInternal abm = null;
+    javax.swing.JDesktopPane dp = getDesktopPane();
+    if (dp != null) for (javax.swing.JInternalFrame f : dp.getAllFrames())
+        if (f instanceof VehiculoAgregarEliminarInternal) { abm = (VehiculoAgregarEliminarInternal) f; break; }
+
+    if (abm == null) { JOptionPane.showMessageDialog(this, "Abra primero 'Agregar/Eliminar Vehículo'."); return; }
+
+
+    abm.cargarParaSoloEliminar(v);
+
+
+    abm.addPropertyChangeListener("vehiculosChanged", e -> btnRefrescarActionPerformed(null));
+    abm.toFront();
+    try { abm.setSelected(true); } catch (Exception ignore) {}
+}
     
     private void Buscar(){
          String placaLike = txtPlaca.getText().trim().toLowerCase();
@@ -350,7 +373,7 @@ public class VehiculoListaInternalFrame extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_btnEditarActionPerformed
 
     private void btnCargarEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCargarEliminarActionPerformed
-      editar();
+      cargarSoloEliminar();
     }//GEN-LAST:event_btnCargarEliminarActionPerformed
 
 
