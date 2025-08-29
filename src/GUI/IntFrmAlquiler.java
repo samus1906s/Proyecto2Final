@@ -4,6 +4,7 @@
  */
 package GUI;
 
+import Gestiones.CompartirDatos;
 import Excepciones.VehiculoExcepciones.EstadoInvalidoExcepcion;
 import Excepciones.VehiculoExcepciones.TransicionEstadoNoPermitidoExcepcion;
 import Excepciones.AlquileresExcepciones.AlquilerNoValidoExcepcion;
@@ -42,11 +43,10 @@ public class IntFrmAlquiler extends javax.swing.JInternalFrame {
     /**
      * Creates new form IntFrmAlquiler
      */
-    public IntFrmAlquiler(GestorAlquileresHashMap gestor, List<Cliente> clientes, Map<String, Vehiculos> vehiculos) {
-        this.gestorAlquileres = gestor;
-        this.listaClientes = clientes;
-        this.mapaVehiculos = vehiculos;
-        this.currentAlquiler = null;
+    public IntFrmAlquiler() {
+        this.gestorAlquileres = CompartirDatos.gestorAlquileres;
+        this.listaClientes = GUI.FrmMenú.CLIENTES.getClientes();
+        this.mapaVehiculos = GUI.FrmMenú.VEHICULOS.getVehiculos();
         
         initComponents();
         ImageIcon icon = new ImageIcon(getClass().getResource("/Icons/IconsProyecto2/CrearAlquiler.png"));
@@ -133,21 +133,23 @@ public class IntFrmAlquiler extends javax.swing.JInternalFrame {
     }
     
     private boolean validarCampos() {
-
-       if (!UtilidadesGUI.validarRequiere(txtCedula, txtPlaca, txtFechaInicial, txtFechaFinal, txtTarifa)) {
+        
+        if (!UtilidadesGUI.validarRequiere(txtCedula, txtPlaca, txtFechaInicial, txtFechaFinal, txtTarifa)) {
             UtilidadesGUI.mostrarMensajeDeError(this, "Complete los campos obligatorios.", "Validación");
             return false;
         }
 
-       if (!txtCedula.getText().trim().matches("\\d+")) {
+        final String cedula = txtCedula.getText().trim();
+        if (!cedula.matches("\\d+")) {
             UtilidadesGUI.mostrarMensajeDeError(this, "La cédula debe contener solo números.", "Validación");
             txtCedula.requestFocus();
             return false;
         }
 
+        final double tarifa;
         try {
-            double t = Double.parseDouble(txtTarifa.getText().trim());
-            if (t <= 0) {
+            tarifa = Double.parseDouble(txtTarifa.getText().trim());
+            if (tarifa <= 0) {
                 UtilidadesGUI.mostrarMensajeDeError(this, "La tarifa debe ser un número positivo.", "Validación");
                 txtTarifa.requestFocus();
                 return false;
@@ -159,19 +161,28 @@ public class IntFrmAlquiler extends javax.swing.JInternalFrame {
         }
 
         try {
-            String cedula = txtCedula.getText().trim();
-            String placa = txtPlaca.getText().trim();
-            java.time.LocalDate inicio = obtenerFecha(txtFechaInicial);
-            java.time.LocalDate fin = obtenerFecha(txtFechaFinal);
 
-            if (!ValidacionGeneral.ClienteRegistrado(cedula, listaClientes)) {
+            String placaIngresada = txtPlaca.getText().trim();
+            String placa = placaIngresada.toUpperCase();
+
+            LocalDate inicio = obtenerFecha(txtFechaInicial);
+            LocalDate fin    = obtenerFecha(txtFechaFinal);
+
+            Cliente cliente = buscarCliente(cedula);
+            if (cliente == null) {
                 UtilidadesGUI.mostrarMensajeDeError(this, "La cédula no corresponde a un cliente registrado.", "Validación");
                 return false;
             }
-            if (!ValidacionGeneral.VehiculoRegistrado(placa, mapaVehiculos)) {
+
+            Vehiculos vehiculo = mapaVehiculos.get(placa);
+            if (vehiculo == null) {
+                vehiculo = mapaVehiculos.get(placaIngresada);
+            }
+            if (vehiculo == null) {
                 UtilidadesGUI.mostrarMensajeDeError(this, "La placa no corresponde a un vehículo registrado.", "Validación");
                 return false;
             }
+
             if (!ValidacionGeneral.FechaInicioValida(inicio)) {
                 UtilidadesGUI.mostrarMensajeDeError(this, "La fecha de inicio no puede ser menor a la fecha actual.", "Validación");
                 return false;
@@ -184,16 +195,18 @@ public class IntFrmAlquiler extends javax.swing.JInternalFrame {
                 UtilidadesGUI.mostrarMensajeDeError(this, "La duración del alquiler no puede exceder 30 días.", "Validación");
                 return false;
             }
+
             if (gestorAlquileres.existeAlquilerActivoEnRango(placa, inicio, fin)) {
                 UtilidadesGUI.mostrarMensajeDeError(this, "Ya existe un alquiler activo para ese vehículo en el mismo rango de fechas.", "Validación");
                 return false;
             }
+
         } catch (Exception ex) {
             UtilidadesGUI.mostrarMensajeDeError(this, "Error en validaciones: " + ex.getMessage(), "Validación");
             return false;
         }
         return true;
-    }  
+    }
     
     private void crearAlquiler() {
         if (!validarCampos()) {
@@ -401,6 +414,8 @@ public class IntFrmAlquiler extends javax.swing.JInternalFrame {
 
        btnFinalizar.setEnabled(esActivo);
        btnCancelar.setEnabled(esActivo && !esFinalizado);
+       
+       calcularMontoTotal();
 
     }
     
