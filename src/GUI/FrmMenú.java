@@ -142,7 +142,7 @@ public class FrmMenú extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void GestorClientesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GestorClientesActionPerformed
-       
+        abrirInternal(new FrmClientes());
     }//GEN-LAST:event_GestorClientesActionPerformed
 
     private void GestorAlquileresActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GestorAlquileresActionPerformed

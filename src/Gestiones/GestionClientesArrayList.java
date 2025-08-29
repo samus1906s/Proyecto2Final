@@ -3,17 +3,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package Gestiones;
+
 import Entidades.Cliente;
 import Validaciones.ValidarPersona;
 import java.util.ArrayList;
-import java.time.LocalDate;
-import java.time.Period;
 import Interfaces.Listas;
 
-/**
- *
- * @author samue
- */
 public class GestionClientesArrayList implements Listas<Cliente> {
     private ArrayList<Cliente> clientes;
 
@@ -27,15 +22,31 @@ public class GestionClientesArrayList implements Listas<Cliente> {
 
     @Override
     public boolean agregar(Cliente cliente) {
-        if (cliente == null || cliente.getCedula() == null || existeClientePorCedula(cliente.getCedula()) ||
-        cliente.getLicenciaconductor() == null || cliente.getLicenciaconductor().trim().isEmpty() ||
-        !ValidarPersona.calcularEdad(cliente.getFechaNacimiento()) ||
-        !ValidarPersona.ValidarCorreo(cliente.getCorreo()) ||
-        !ValidarPersona.ValidarTelefono(cliente.getTelefono())) {
-        return false;
-    }
-    clientes.add(cliente);
-    return true;
+        if (cliente == null || 
+            cliente.getCedula() == null || 
+            existeClientePorCedula(cliente.getCedula()) ||
+
+            // validar licencia
+            cliente.getLicenciaconductor() == null || 
+            cliente.getLicenciaconductor().trim().isEmpty() ||
+
+            // validar fecha de nacimiento (edad)
+            cliente.getFechaNacimiento() == null ||
+            !ValidarPersona.calcularEdad(cliente.getFechaNacimiento())||
+
+            // validar correo
+            cliente.getCorreo() == null || 
+            !ValidarPersona.ValidarCorreo(cliente.getCorreo()) ||
+
+            // validar teléfono
+            cliente.getTelefono() == null || 
+            !ValidarPersona.ValidarTelefono(cliente.getTelefono())) {
+
+            return false;
+        }
+
+        clientes.add(cliente);
+        return true;
     }
 
     @Override
@@ -61,23 +72,26 @@ public class GestionClientesArrayList implements Listas<Cliente> {
         }
         return null;
     }
-    
+
     public boolean actualizar(Cliente clienteActualizado) {
-    Cliente c = (clienteActualizado == null || clienteActualizado.getCedula() == null) ? null : buscar(clienteActualizado.getCedula());
-    if (c == null || !ValidarPersona.ValidarCorreo(clienteActualizado.getCorreo()) ||
-        !ValidarPersona.ValidarTelefono(clienteActualizado.getTelefono()) ||
-        clienteActualizado.getLicenciaconductor() == null || clienteActualizado.getLicenciaconductor().trim().isEmpty()) {
-        return false;
+        Cliente c = (clienteActualizado == null || clienteActualizado.getCedula() == null) 
+                ? null 
+                : buscar(clienteActualizado.getCedula());
+
+        if (c == null || 
+            clienteActualizado.getCorreo() == null || !ValidarPersona.ValidarCorreo(clienteActualizado.getCorreo()) ||
+            clienteActualizado.getTelefono() == null || !ValidarPersona.ValidarTelefono(clienteActualizado.getTelefono()) ||
+            clienteActualizado.getLicenciaconductor() == null || clienteActualizado.getLicenciaconductor().trim().isEmpty()) {
+            return false;
+        }
+
+        c.setTelefono(clienteActualizado.getTelefono());
+        c.setCorreo(clienteActualizado.getCorreo());
+        c.setLicenciaconductor(clienteActualizado.getLicenciaconductor());
+        return true;
     }
-    c.setTelefono(clienteActualizado.getTelefono());
-    c.setCorreo(clienteActualizado.getCorreo());
-    c.setLicenciaconductor(clienteActualizado.getLicenciaconductor());
-    return true;
-}
-    
-     private boolean existeClientePorCedula(String cedula) {
+
+    private boolean existeClientePorCedula(String cedula) {
         return buscar(cedula) != null;
     }
-    
-    
 }
