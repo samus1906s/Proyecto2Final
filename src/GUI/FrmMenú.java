@@ -12,6 +12,8 @@ import javax.swing.ImageIcon;
  */
 public class FrmMenú extends javax.swing.JFrame {
     public static final Gestiones.VehiculosHashMap VEHICULOS = new Gestiones.VehiculosHashMap();
+    public static final Gestiones.GestionReserva RESERVAS = new Gestiones.GestionReserva();
+    public static final Gestiones.GestionClientesArrayList CLIENTES = new Gestiones.GestionClientesArrayList();
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmMenú.class.getName());
     private DesktopConFondo escritorioConFondo;
     /**
