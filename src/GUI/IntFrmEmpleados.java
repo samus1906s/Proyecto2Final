@@ -4,18 +4,228 @@
  */
 package GUI;
 
+import Entidades.Empleado;
+import Entidades.TipoPuesto;
+import Gestiones.GestionEmpleadosArrayList;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author samue
  */
 public class IntFrmEmpleados extends javax.swing.JInternalFrame {
+private GestionEmpleadosArrayList gestionEmpleados;
+private Empleado empleado;
+private boolean modoEdicion = false;
+private String cedulaEnEdicion = null;
+private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     /**
      * Creates new form IntFrmEmpleados
      */
     public IntFrmEmpleados() {
         initComponents();
+         gestionEmpleados = new GestionEmpleadosArrayList(new java.util.ArrayList<>());
+        limpiarCampos();
     }
+    
+    private void agregarEmpleado() {
+    try {
+        // Capturar datos de los campos
+        String cedula   = txtCedula.getText().trim();
+        String nombre   = txtNombre.getText().trim();
+        String fnacStr  = txtFecha.getText().trim();
+        String telefono = txtTelefono.getText().trim();
+        String correo   = txtCorreo.getText().trim();
+        double salario;
+        try {
+            salario = Double.parseDouble(txtSalario.getText().trim());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Salario inválido.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Convertir fecha
+        LocalDate fechaNacimiento = null;
+        if (!fnacStr.isEmpty()) {
+            try {
+                fechaNacimiento = LocalDate.parse(fnacStr, formatter);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Formato de fecha inválido. Use dd/MM/yyyy.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+
+        // Obtener puesto del ComboBox
+        String puestoStr = cboxPuesto.getSelectedItem().toString().toUpperCase();
+        TipoPuesto puesto;
+        try {
+            puesto = TipoPuesto.valueOf(puestoStr);
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, "Puesto inválido.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (modoEdicion) {
+            // Actualizar empleado existente
+            Empleado empleadoExistente = gestionEmpleados.buscar(cedulaEnEdicion);
+
+            if (empleadoExistente == null) {
+                JOptionPane.showMessageDialog(this, "El empleado ya no existe.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            empleadoExistente.setTelefono(telefono);
+            empleadoExistente.setCorreo(correo);
+            empleadoExistente.setSalario(salario);
+            empleadoExistente.setTrabajo(puesto);
+
+            if (!gestionEmpleados.actualizar(empleadoExistente)) {
+                JOptionPane.showMessageDialog(this, "No se pudo actualizar el empleado. Verifique los datos.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            JOptionPane.showMessageDialog(this, "Empleado actualizado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+
+            // Resetear modo edición
+            modoEdicion = false;
+            cedulaEnEdicion = null;
+
+            // Volver a habilitar campos bloqueados
+            txtCedula.setEnabled(true);
+            txtNombre.setEnabled(true);
+            txtFecha.setEnabled(true);
+
+        } else {
+            // Crear nuevo empleado
+            Empleado empleado = new Empleado(cedula, nombre, fechaNacimiento, telefono, correo, salario, puesto);
+
+            if (!gestionEmpleados.agregar(empleado)) {
+                JOptionPane.showMessageDialog(this, "No se pudo agregar el empleado. Verifique los datos ingresados.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            JOptionPane.showMessageDialog(this, "Empleado agregado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        // Actualizar tabla y limpiar campos
+        mostrarEnTabla();
+        limpiarCampos();
+
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Error al procesar el empleado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
+    }
+}
+
+    
+    private void mostrarEnTabla() {
+        DefaultTableModel model = (DefaultTableModel) tblEmpleado.getModel();
+        model.setRowCount(0);
+
+        for (Empleado e : gestionEmpleados.getEmpleados()) {
+            Object[] fila = {
+                e.getCedula(),
+                e.getNombre(),
+                e.getFechaNacimiento().format(formatter),
+                e.getTelefono(),
+                e.getCorreo(),
+                e.getTrabajo(),
+                e.getSalario()
+            };
+            model.addRow(fila);
+        }
+    }
+    
+     private void actualizarEmpleado() {
+        int filaSeleccionada = tblEmpleado.getSelectedRow();
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(this, "Seleccione un empleado en la tabla para actualizar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String cedula = tblEmpleado.getValueAt(filaSeleccionada, 0).toString();
+        Empleado emp = gestionEmpleados.buscar(cedula);
+        if (emp == null) {
+            JOptionPane.showMessageDialog(this, "Empleado no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        txtCedula.setText(emp.getCedula());
+        txtNombre.setText(emp.getNombre());
+        txtFecha.setText(emp.getFechaNacimiento().format(formatter));
+        txtTelefono.setText(emp.getTelefono());
+        txtCorreo.setText(emp.getCorreo());
+        cboxPuesto.setSelectedItem(emp.getTrabajo());
+        txtSalario.setText(String.valueOf(emp.getSalario()));
+
+        cedulaEnEdicion = emp.getCedula();
+        modoEdicion = true;
+
+        txtCedula.setEnabled(false);
+        txtNombre.setEnabled(false);
+        txtFecha.setEnabled(false);
+
+        JOptionPane.showMessageDialog(this, "Modifique solo Teléfono, Correo, Puesto o Salario y luego presione 'Agregar' para guardar los cambios.", "Modo edición", JOptionPane.INFORMATION_MESSAGE);
+    }
+     
+    private void eliminarEmpleado() {
+        int filaSeleccionada = tblEmpleado.getSelectedRow();
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(this, "Seleccione un empleado en la tabla para eliminar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String cedula = tblEmpleado.getValueAt(filaSeleccionada, 0).toString();
+
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Está seguro de eliminar el empleado con cédula " + cedula + "?", "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        Empleado emp = gestionEmpleados.buscar(cedula);
+        if (emp != null && gestionEmpleados.eliminar(emp)) {
+            JOptionPane.showMessageDialog(this, "Empleado eliminado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            mostrarEnTabla();
+            limpiarCampos();
+        } else {
+            JOptionPane.showMessageDialog(this, "No se pudo eliminar el empleado.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private void buscarEmpleado() {
+    String cedula = txtBuscar.getText().trim();
+
+    DefaultTableModel model = (DefaultTableModel) tblEmpleado.getModel();
+    model.setRowCount(0);
+
+    if (cedula.isEmpty()) {
+        
+        mostrarEnTabla();
+        return;
+    }
+
+    Empleado emp = gestionEmpleados.buscar(cedula);
+
+    if (emp != null) {
+        Object[] fila = {
+            emp.getCedula(),
+            emp.getNombre(),
+            emp.getFechaNacimiento().format(formatter),
+            emp.getTelefono(),
+            emp.getCorreo(),
+            emp.getTrabajo(),
+            emp.getSalario()
+        };
+        model.addRow(fila);
+    } else {
+        JOptionPane.showMessageDialog(this, "No se encontró ningún empleado con esa cédula.", "Info", JOptionPane.INFORMATION_MESSAGE);
+    }
+}
+
+    
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -44,12 +254,13 @@ public class IntFrmEmpleados extends javax.swing.JInternalFrame {
         jLabel8 = new javax.swing.JLabel();
         cboxPuesto = new javax.swing.JComboBox<>();
         jLabel9 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        txtSalario = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tblEmpleado = new javax.swing.JTable();
         btnAgregar = new javax.swing.JButton();
         btnEliminar = new javax.swing.JButton();
         btnLimpiar = new javax.swing.JButton();
+        btnActualizar = new javax.swing.JButton();
 
         setClosable(true);
         setIconifiable(true);
@@ -65,6 +276,11 @@ public class IntFrmEmpleados extends javax.swing.JInternalFrame {
 
         txtBuscar.setFont(new java.awt.Font("Baskerville Old Face", 0, 18)); // NOI18N
         txtBuscar.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
+        txtBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtBuscarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -149,16 +365,16 @@ public class IntFrmEmpleados extends javax.swing.JInternalFrame {
         jLabel8.setText("Puesto:");
 
         cboxPuesto.setFont(new java.awt.Font("Baskerville Old Face", 0, 18)); // NOI18N
-        cboxPuesto.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Gerente", "Mecanico", "Secretario", " " }));
+        cboxPuesto.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "GERENTE", "MECANICO", "SECRETARIO", " " }));
         cboxPuesto.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
 
         jLabel9.setFont(new java.awt.Font("Baskerville Old Face", 0, 18)); // NOI18N
         jLabel9.setText("Salario:");
 
-        jTextField1.setFont(new java.awt.Font("Baskerville Old Face", 0, 18)); // NOI18N
-        jTextField1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
+        txtSalario.setFont(new java.awt.Font("Baskerville Old Face", 0, 18)); // NOI18N
+        txtSalario.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblEmpleado.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null, null, null},
                 {null, null, null, null, null, null, null},
@@ -169,16 +385,38 @@ public class IntFrmEmpleados extends javax.swing.JInternalFrame {
                 "Cedula", "Nombre", "Fecha", "Telefono", "Correo", "Puesto", "Salario"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tblEmpleado);
 
         btnAgregar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/IconsProyecto2/user_add_48.png"))); // NOI18N
         btnAgregar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        btnAgregar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAgregarActionPerformed(evt);
+            }
+        });
 
         btnEliminar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/IconsProyecto2/user_delete_48.png"))); // NOI18N
         btnEliminar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        btnEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarActionPerformed(evt);
+            }
+        });
 
         btnLimpiar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/IconsProyecto2/gtk-clear.png"))); // NOI18N
         btnLimpiar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        btnLimpiar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLimpiarActionPerformed(evt);
+            }
+        });
+
+        btnActualizar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/IconsProyecto2/update-manager.png"))); // NOI18N
+        btnActualizar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnActualizarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -204,20 +442,22 @@ public class IntFrmEmpleados extends javax.swing.JInternalFrame {
                     .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cboxPuesto, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField1))
+                    .addComponent(txtSalario))
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jScrollPane1)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 704, Short.MAX_VALUE)
                         .addContainerGap())
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(142, 142, 142)
+                        .addGap(91, 91, 91)
                         .addComponent(btnAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(89, 89, 89)
+                        .addGap(66, 66, 66)
                         .addComponent(btnLimpiar, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 89, Short.MAX_VALUE)
+                        .addGap(60, 60, 60)
+                        .addComponent(btnActualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(165, 165, 165))))
+                        .addGap(125, 125, 125))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -249,17 +489,17 @@ public class IntFrmEmpleados extends javax.swing.JInternalFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtSalario, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 448, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnAgregar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnEliminar, javax.swing.GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE)
-                    .addComponent(btnLimpiar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE))
-                .addContainerGap())
+                    .addComponent(btnAgregar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnLimpiar, javax.swing.GroupLayout.DEFAULT_SIZE, 68, Short.MAX_VALUE)
+                    .addComponent(btnActualizar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnEliminar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -280,7 +520,7 @@ public class IntFrmEmpleados extends javax.swing.JInternalFrame {
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(15, Short.MAX_VALUE))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
 
         pack();
@@ -306,8 +546,29 @@ public class IntFrmEmpleados extends javax.swing.JInternalFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtTelefonoActionPerformed
 
+    private void txtBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBuscarActionPerformed
+        buscarEmpleado();
+    }//GEN-LAST:event_txtBuscarActionPerformed
+
+    private void btnAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarActionPerformed
+        agregarEmpleado();
+    }//GEN-LAST:event_btnAgregarActionPerformed
+
+    private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
+       limpiarCampos();
+    }//GEN-LAST:event_btnLimpiarActionPerformed
+
+    private void btnActualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarActionPerformed
+        actualizarEmpleado();
+    }//GEN-LAST:event_btnActualizarActionPerformed
+
+    private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
+      eliminarEmpleado();
+    }//GEN-LAST:event_btnEliminarActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnActualizar;
     private javax.swing.JButton btnAgregar;
     private javax.swing.JButton btnEliminar;
     private javax.swing.JButton btnLimpiar;
@@ -324,13 +585,29 @@ public class IntFrmEmpleados extends javax.swing.JInternalFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTable tblEmpleado;
     private javax.swing.JTextField txtBuscar;
     private javax.swing.JFormattedTextField txtCedula;
     private javax.swing.JFormattedTextField txtCorreo;
     private javax.swing.JFormattedTextField txtFecha;
     private javax.swing.JTextField txtNombre;
+    private javax.swing.JTextField txtSalario;
     private javax.swing.JFormattedTextField txtTelefono;
     // End of variables declaration//GEN-END:variables
+
+    private void limpiarCampos() {
+         txtCedula.setText("");
+        txtNombre.setText("");
+        txtFecha.setText("");
+        txtTelefono.setText("");
+        txtCorreo.setText("");
+        cboxPuesto.setSelectedIndex(0);
+        txtSalario.setText("");
+
+        txtCedula.setEnabled(true);
+        txtNombre.setEnabled(true);
+        txtFecha.setEnabled(true);
+        txtCedula.requestFocus();
+    }
+    
 }

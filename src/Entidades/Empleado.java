@@ -32,15 +32,21 @@ public class Empleado extends Persona {
             this.salario = salario;
     }
 
-    public Empleado(String cedula, String nombre, LocalDate fechaNacimiento, String telefono, String correo, double salario) {
-        super(cedula, nombre, fechaNacimiento, telefono, correo);
-        if(ValidarSalario(salario)) 
-        this.salario = 0;
-       if(trabajo != null){
-         this.trabajo = trabajo;
-        }else
+    public Empleado(String cedula, String nombre, LocalDate fechaNacimiento, String telefono, String correo, double salario, TipoPuesto trabajo) {
+    super(cedula, nombre, fechaNacimiento, telefono, correo);
+    if(ValidarSalario(salario)) {
+        this.salario = salario;
+    } else {
+        this.salario = 5000; 
+    }
+    if(trabajo != null) {
+        this.trabajo = trabajo;
+    } else {
         this.trabajo = TipoPuesto.GERENTE;
     }
+}
+
+
     
     
     
