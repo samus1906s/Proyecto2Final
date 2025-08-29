@@ -11,9 +11,7 @@ import Interfaces.Listas;
 import Validaciones.ValidacionGeneral;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class GestorAlquileresHashMap implements Listas<Alquiler> {
 
@@ -99,14 +97,12 @@ public class GestorAlquileresHashMap implements Listas<Alquiler> {
         }
         return false;
     }
-
-    public ArrayList<Alquiler> obtenerContratosVigentes() {
-        ArrayList<Alquiler> vigentes = new ArrayList<>();
-        for (Alquiler a : alquileres.values()) {
-            if (a.contratoVigente()) {
-                vigentes.add(a);
-            }
+    
+    public int generarNuevoID() {
+        if (alquileres.isEmpty()) {
+            return 1;
+        } else {
+            return alquileres.keySet().stream().max(Integer::compareTo).get() + 1;
         }
-        return vigentes;
     }
 }

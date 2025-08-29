@@ -4,6 +4,11 @@
  */
 package GUI;
 
+import Entidades.Cliente;
+import Entidades.Vehiculos;
+import Gestiones.GestorAlquileresHashMap;
+import java.util.List;
+import java.util.Map;
 import javax.swing.ImageIcon;
 
 /**
@@ -146,7 +151,11 @@ public class FrmMenú extends javax.swing.JFrame {
     }//GEN-LAST:event_GestorClientesActionPerformed
 
     private void GestorAlquileresActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GestorAlquileresActionPerformed
-        abrirInternal(new IntFrmAlquiler());
+        GestorAlquileresHashMap gestor = new GestorAlquileresHashMap(); 
+        List<Cliente> clientes = java.util.Collections.emptyList(); 
+        Map<String, Vehiculos> vehiculos = VEHICULOS.getVehiculos();    
+
+        abrirInternal(new IntFrmAlquiler(gestor, clientes, vehiculos));
     }//GEN-LAST:event_GestorAlquileresActionPerformed
 
 
