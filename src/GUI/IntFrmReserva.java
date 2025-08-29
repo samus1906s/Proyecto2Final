@@ -4,23 +4,54 @@
  */
 package GUI;
 
+import Entidades.Alquiler;
+import Entidades.Cliente;
+import Entidades.EstadoVehiculos;
+import Entidades.Reserva;
 import Entidades.TipoVehiculo;
+import Entidades.Vehiculos;
+import Excepciones.ClientesExcepciones.ClienteNoEncontrado;
+import Excepciones.ReservaExcepciones.DuracionReservaExcedida;
+import Excepciones.ReservaExcepciones.FechaInicioInvalida;
+import Excepciones.ReservaExcepciones.FechasDeReservasIncompletas;
+import Excepciones.VehiculoExcepciones.AñoIncorrectoExcepcion;
+import Excepciones.VehiculoExcepciones.CampoVacioExcepcion;
+import Excepciones.VehiculoExcepciones.EstadoInvalidoExcepcion;
+import Excepciones.VehiculoExcepciones.PlacaInvalidaExcepcion;
+import Excepciones.VehiculoExcepciones.VehiculoNoDisponible;
+import Excepciones.VehiculoExcepciones.VehiculoNoEncontrado;
+import Gestiones.GestionReserva;
 import Utilidad.UtilidadesGUI;
 import Validaciones.CustomRegexFormatter;
+import Validaciones.ValidarPersona;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+import javax.swing.text.MaskFormatter;
 
 /**
  *
  * @author Eduard Salas Murillo
  */
 public class IntFrmReserva extends javax.swing.JInternalFrame {
-
+    private final GestionReserva gestion;
+    private Reserva reserva; 
+    private Map<String, Cliente> clientes; 
+    private Map<String, Vehiculos> vehiculos; 
     /**
      * Creates new form IntFrmReserva
      */
     public IntFrmReserva() {
         initComponents();
+        this.gestion = new GestionReserva();
+        this.reserva = null;
+        this.clientes = new HashMap<>(); 
+        this.vehiculos = new HashMap<>();
         String regexCorreo = "^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$";
         String errorCorreo = "Formato de correo inválido.";
         txtCorreo.setFormatterFactory(
@@ -28,7 +59,21 @@ public class IntFrmReserva extends javax.swing.JInternalFrame {
             new CustomRegexFormatter(regexCorreo, errorCorreo)
         ));
         tipoVehiculo();
+        configurarFormatoIdReserva();
+        
     }
+    private void configurarFormatoIdReserva() {
+    txtIdReserva.addFocusListener(new java.awt.event.FocusAdapter() {
+        @Override public void focusLost(java.awt.event.FocusEvent e) {
+            String s = txtIdReserva.getText().trim();
+            if (!s.matches("^\\d{1,6}$")) { 
+                javax.swing.JOptionPane.showMessageDialog(IntFrmReserva.this,
+                    "El ID debe ser numérico (ej: 1234).");
+                txtIdReserva.requestFocus();
+            }
+        }
+    });
+}
     private void tipoVehiculo(){
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         for (TipoVehiculo tipo:TipoVehiculo.values()) {
@@ -53,6 +98,166 @@ public class IntFrmReserva extends javax.swing.JInternalFrame {
     private boolean validateRequiere(JComponent...txts){
         return UtilidadesGUI.validarRequiere(txtCedulaCliente,txtNombre,txtFechaNacimiento,txtCorreo,txtPlaca,txtMarca,txtModelo,txtAno,txtTipoVehiculo,txtIdReserva,txtFechaInicio,txtFechaFinalizacion);
     }
+    private void guardarReserva() {
+    if (!validateRequiere(txtCedulaCliente, txtIdReserva, txtPlaca, txtFechaInicio, txtFechaFinalizacion)) {
+        javax.swing.JOptionPane.showMessageDialog(this, "Complete los campos requeridos.");
+        return;
+    }
+
+    String idStr = txtIdReserva.getText().trim();
+    if (!idStr.matches("^\\d{1,6}$")) { 
+        javax.swing.JOptionPane.showMessageDialog(this,
+            "El ID de la reserva debe ser numérico (ej: 1234).");
+        txtIdReserva.requestFocus();
+        txtIdReserva.selectAll();
+        return;
+    }
+    int id = Integer.parseInt(idStr);
+
+    String placa = txtPlaca.getText().trim().toUpperCase();
+    if (placa.matches("^[A-Z]{2}\\d{4}$")) {          
+        placa = placa.substring(0,2) + "-" + placa.substring(2);
+    }
+    if (!placa.matches("^[A-Z]{2}-\\d{4}$")) {
+        javax.swing.JOptionPane.showMessageDialog(this,
+            "Placa inválida. Formato requerido: 2 letras, guion y 4 números (ej: AB-1234).");
+        txtPlaca.requestFocus();
+        txtPlaca.selectAll();
+        return;
+    }
+    txtPlaca.setText(placa);
+
+    
+    try {
+        String cedula = txtCedulaCliente.getText().trim();
+
+        Entidades.Cliente cliente = GUI.FrmMenú.CLIENTES.buscar(cedula);
+        if (cliente == null) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Cliente no registrado.");
+            return;
+        }
+
+        Entidades.Vehiculos vehiculo = GUI.FrmMenú.VEHICULOS.buscar(placa);
+        if (vehiculo == null) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Vehículo no existente.");
+            return;
+        }
+
+        java.time.LocalDate ini = java.time.LocalDate.parse(txtFechaInicio.getText().trim());
+        java.time.LocalDate fin = java.time.LocalDate.parse(txtFechaFinalizacion.getText().trim());
+
+        java.util.Map<Integer, Entidades.Reserva> reservasMap   = GUI.FrmMenú.RESERVAS.getReservas();
+        java.util.Map<String, Entidades.Vehiculos> vehiculosMap = GUI.FrmMenú.VEHICULOS.getVehiculos();
+        java.util.List<Entidades.Cliente>          clientesList = GUI.FrmMenú.CLIENTES.getClientes();
+
+        Entidades.Reserva r = new Entidades.Reserva(
+            id, cliente, vehiculo, ini, fin,
+            reservasMap,  
+            vehiculosMap, 
+            clientesList  
+        );
+
+        boolean ok = GUI.FrmMenú.RESERVAS.agregar(r);
+        if (ok) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Reserva creada correctamente.");
+            limpiar();
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(this, "No se pudo crear (traslape de fechas o no disponible).");
+        }
+
+    } catch (Exception ex) {
+        javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage(), "Error al crear la reserva",
+                javax.swing.JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+    private void eliminarReserva() {
+        if (reserva == null) {
+            UtilidadesGUI.mostrarMensajeDeError(this, "Debe seleccionar una reserva para eliminar", "Error");
+            return;
+        }
+        
+        if (gestion.eliminar(reserva)) {
+            reserva = null;
+            limpiar();
+        } else {
+            UtilidadesGUI.mostrarMensajeDeError(this, "No se pudo eliminar la reserva. Verifique la fecha de inicio.", "Error");
+        }
+    }
+    
+    private void modificarReserva() throws PlacaInvalidaExcepcion, CampoVacioExcepcion, AñoIncorrectoExcepcion, EstadoInvalidoExcepcion {
+        if (reserva == null) {
+            UtilidadesGUI.mostrarMensajeDeError(this, "No se ha seleccionado una reserva para modificar", "Error");
+            return;
+        }
+
+        if (!validateRequiere()) {
+            UtilidadesGUI.mostrarMensajeDeError(this, "Faltan datos requeridos", "Error");
+            return;
+        }
+        
+        try {
+            Vehiculos nuevoVehiculo = new Vehiculos(
+                txtPlaca.getText(),
+                txtMarca.getText(),
+                txtModelo.getText(),
+                Integer.parseInt(txtAno.getText()),
+                (TipoVehiculo) txtTipoVehiculo.getSelectedItem(),
+                reserva.getVehiculo().getEstado() 
+            );
+
+            if (gestion.modificar(reserva.getIdReserva(), nuevoVehiculo)) {
+                reserva.setVehiculo(nuevoVehiculo);
+                
+            } else {
+                UtilidadesGUI.mostrarMensajeDeError(this, "No se pudo modificar la reserva. El nuevo vehículo no está disponible.", "Error");
+            }
+        } catch (NumberFormatException e) {
+            UtilidadesGUI.mostrarMensajeDeError(this, "Formato de año inválido", "Error");
+        }
+    }
+    private void abrirBuscar(){
+       GUI.IntFrmBuscarReserva frm = new GUI.IntFrmBuscarReserva();  
+       FrmMenú menu = (FrmMenú) javax.swing.SwingUtilities.getAncestorOfClass(FrmMenú.class, this);
+      if (menu != null) {
+          menu.abrirInternal(frm);
+        } else {
+         javax.swing.JDesktopPane dp = getDesktopPane();
+        dp.add(frm);
+        frm.setVisible(true);
+        try { frm.setSelected(true); } catch (Exception ignore) {}
+    }
+    }
+    private void confirmarReserva() {
+         String idText = JOptionPane.showInputDialog(this, "Ingrese el ID de la reserva a confirmar:");
+    if (idText == null || idText.isEmpty()) return;
+    try {
+        int idReserva = Integer.parseInt(idText.trim());
+        double tarifaDiaria = 50.0;
+        Alquiler nuevoAlquiler = FrmMenú.RESERVAS.confirmarReserva(
+            idReserva,
+            tarifaDiaria,
+            clientesMap(),
+            FrmMenú.VEHICULOS.getVehiculos()
+        );
+        if (nuevoAlquiler == null) {
+            UtilidadesGUI.mostrarMensajeDeError(this, "No se pudo confirmar la reserva", "Error");
+            return;
+        }
+        limpiar();
+    } catch (NumberFormatException ex) {
+        UtilidadesGUI.mostrarMensajeDeError(this, "El ID debe ser numérico", "Error");
+    }
+    }
+    private Map<String, Cliente> clientesMap() {
+    LinkedHashMap<String, Cliente> m = new LinkedHashMap<>();
+    for (Cliente c : FrmMenú.CLIENTES.getClientes()) {
+        m.put(c.getCedula(), c);
+    }
+    return m;
+}
+
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -96,7 +301,7 @@ public class IntFrmReserva extends javax.swing.JInternalFrame {
         jLabel17 = new javax.swing.JLabel();
         txtFechaInicio = new javax.swing.JFormattedTextField();
         txtFechaFinalizacion = new javax.swing.JFormattedTextField();
-        txtIdReserva = new javax.swing.JFormattedTextField();
+        txtIdReserva = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
@@ -219,7 +424,7 @@ public class IntFrmReserva extends javax.swing.JInternalFrame {
                 .addComponent(jLabel7)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtCorreo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(51, Short.MAX_VALUE))
+                .addContainerGap(60, Short.MAX_VALUE))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 204)));
@@ -251,7 +456,7 @@ public class IntFrmReserva extends javax.swing.JInternalFrame {
         txtTipoVehiculo.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
 
         try {
-            txtPlaca.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("LL-####")));
+            txtPlaca.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("AA-####")));
         } catch (java.text.ParseException ex) {
             ex.printStackTrace();
         }
@@ -342,12 +547,7 @@ public class IntFrmReserva extends javax.swing.JInternalFrame {
         txtFechaFinalizacion.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter(new java.text.SimpleDateFormat("dd/MM/yyyy"))));
         txtFechaFinalizacion.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
 
-        try {
-            txtIdReserva.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("L-###")));
-        } catch (java.text.ParseException ex) {
-            ex.printStackTrace();
-        }
-        txtIdReserva.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        txtIdReserva.setFont(new java.awt.Font("Segoe UI", 2, 18)); // NOI18N
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -373,7 +573,7 @@ public class IntFrmReserva extends javax.swing.JInternalFrame {
                             .addComponent(jLabel17, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(txtIdReserva, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(txtIdReserva, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(121, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
@@ -385,7 +585,7 @@ public class IntFrmReserva extends javax.swing.JInternalFrame {
                 .addComponent(jLabel15)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtIdReserva, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(11, 11, 11)
+                .addGap(20, 20, 20)
                 .addComponent(jLabel16)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtFechaInicio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -393,7 +593,7 @@ public class IntFrmReserva extends javax.swing.JInternalFrame {
                 .addComponent(jLabel17)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtFechaFinalizacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(180, Short.MAX_VALUE))
         );
 
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/IconsProyecto2/zen-icon.png"))); // NOI18N
@@ -503,30 +703,40 @@ public class IntFrmReserva extends javax.swing.JInternalFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 17, Short.MAX_VALUE))
+                .addGap(0, 8, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        // TODO add your handling code here:
+        abrirBuscar();
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
+        confirmarReserva();
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
+        eliminarReserva();
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+        try {
+            modificarReserva();
+        } catch (PlacaInvalidaExcepcion ex) {
+            System.getLogger(IntFrmReserva.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        } catch (CampoVacioExcepcion ex) {
+            System.getLogger(IntFrmReserva.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        } catch (AñoIncorrectoExcepcion ex) {
+            System.getLogger(IntFrmReserva.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        } catch (EstadoInvalidoExcepcion ex) {
+            System.getLogger(IntFrmReserva.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        // TODO add your handling code here:
+     guardarReserva();
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
@@ -568,7 +778,7 @@ public class IntFrmReserva extends javax.swing.JInternalFrame {
     private javax.swing.JFormattedTextField txtFechaFinalizacion;
     private javax.swing.JFormattedTextField txtFechaInicio;
     private javax.swing.JFormattedTextField txtFechaNacimiento;
-    private javax.swing.JFormattedTextField txtIdReserva;
+    private javax.swing.JTextField txtIdReserva;
     private javax.swing.JTextField txtMarca;
     private javax.swing.JTextField txtModelo;
     private javax.swing.JTextField txtNombre;

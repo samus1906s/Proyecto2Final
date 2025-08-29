@@ -8,6 +8,7 @@ import Entidades.Alquiler;
 import Entidades.Cliente;
 import Entidades.Reserva;
 import Entidades.Vehiculos;
+import Entidades.EstadoReserva; 
 import Interfaces.Listas;
 import Validaciones.ValidarReservas;
 import java.time.LocalDate;
@@ -16,109 +17,138 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.LinkedList;
+import java.util.List;
 
-/**
- *
- * @author Eduard Salas Murillo
- */
-public class GestionReserva implements Listas <Reserva> {
+public class GestionReserva implements Listas<Reserva> {
 
-    private Map<Integer, Reserva> reservasActivas;
-    private Queue<Reserva> reservasEnEspera;
+    private final Map<Integer, Reserva> reservasActivas;
+    private final Queue<Reserva> reservasEnEspera;
+
+    private final Map<String, Vehiculos> vehiculos;
+    private final List<Cliente> clientes;
 
     public GestionReserva() {
         this.reservasActivas = new HashMap<>();
         this.reservasEnEspera = new LinkedList<>();
+        this.vehiculos = new HashMap<>();
+        this.clientes = new ArrayList<>();
+    }
+
+    
+    public Map<Integer, Reserva> getReservas() {
+        return this.reservasActivas;
+    }
+
+    public Map<String, Vehiculos> getVehiculos() {
+        return this.vehiculos;
+    }
+    public List<Cliente> getClientes() {
+        return this.clientes;
     }
 
     @Override
     public boolean agregar(Reserva reserva) {
         if (ValidarReservas.VehiculoDisponible(
-            reserva.getVehiculo(), 
-            reserva.getFechaInicio(), 
-            reserva.getFechaFin(), 
-            reservasActivas)) {
+                reserva.getVehiculo(),
+                reserva.getFechaInicio(),
+                reserva.getFechaFin(),
+                reservasActivas)) {
+
+            reserva.setEstado(EstadoReserva.CONFIRMADA); 
             reservasActivas.put(reserva.getIdReserva(), reserva);
             return true;
         } else {
-            reservasEnEspera.add(reserva);
+            reserva.setEstado(EstadoReserva.EN_ESPERA); 
+            if (!reservasEnEspera.contains(reserva)) {  
+                reservasEnEspera.add(reserva);
+            }
             return false;
         }
     }
 
     @Override
     public boolean eliminar(Reserva reserva) {
-     if (reservasActivas.containsKey(reserva.getIdReserva())) {
-         LocalDate hoy = LocalDate.now();
-         if (reserva.getFechaInicio().isAfter(hoy)) {
-             reservasActivas.remove(reserva.getIdReserva());
-             return true;
-            } 
+        if (reservasEnEspera.remove(reserva)) {
+            reserva.setEstado(EstadoReserva.CANCELADA); 
+            return true;
         }
-     return false; 
-    }
-
-    @Override
-    public Reserva buscar(Object id) {
-      if (id instanceof Integer) {
-          return reservasActivas.get((Integer) id);
-        }  else if (id instanceof String) {
-              try {
-                 int intId = Integer.parseInt((String) id);
-                 return reservasActivas.get(intId);
-                } catch (NumberFormatException e) {
-                return null;
-            }
-        }
-        return null;
-    }
-    
-    public boolean modificar(int idReserva, Vehiculos nuevoVehiculo) {
-        Reserva reservaAModificar = reservasActivas.get(idReserva);
-        if (reservaAModificar != null) {
-            if (ValidarReservas.VehiculoDisponible(
-                nuevoVehiculo, 
-                reservaAModificar.getFechaInicio(), 
-                reservaAModificar.getFechaFin(), 
-                reservasActivas)) {
-                 reservaAModificar.setVehiculo(nuevoVehiculo);
+        if (reservasActivas.containsKey(reserva.getIdReserva())) {
+            LocalDate hoy = LocalDate.now();
+            if (reserva.getFechaInicio().isAfter(hoy)) {
+                reservasActivas.remove(reserva.getIdReserva());
+                reserva.setEstado(EstadoReserva.CANCELADA); 
                 return true;
             }
         }
         return false;
     }
-    
-    public Alquiler confirmarReserva(int idReserva,double tarifaDiaria,Map<String, Cliente> clientes, Map<String, Vehiculos> vehiculos) {
-     Reserva reservaAConfirmar = null;
-     for (Reserva r : reservasEnEspera) {
-         if (r.getIdReserva() == idReserva) {
-            reservaAConfirmar = r;
-             break;
+
+    @Override
+    public Reserva buscar(Object id) {
+        if (id instanceof Integer) {
+            return reservasActivas.get((Integer) id);
+        } else if (id instanceof String) {
+            try {
+                int intId = Integer.parseInt((String) id);
+                return reservasActivas.get(intId);
+            } catch (NumberFormatException e) {
+                return null;
             }
         }
-     if (reservaAConfirmar != null) {
-         if (ValidarReservas.VehiculoDisponible(
-                 reservaAConfirmar.getVehiculo(),
-                 reservaAConfirmar.getFechaInicio(),
-                 reservaAConfirmar.getFechaFin(),
-                 reservasActivas)) {
-                 reservasEnEspera.remove(reservaAConfirmar);
-                 reservasActivas.put(reservaAConfirmar.getIdReserva(), reservaAConfirmar);
- 
-                 try {
-                     Alquiler nuevoAlquiler = new Alquiler(
-                     reservaAConfirmar,
-                     tarifaDiaria,
-                     new ArrayList<>(clientes.values()),
-                     vehiculos
-                    );
-                  return nuevoAlquiler;
-                } catch (Exception e) {
-                 e.printStackTrace();
-                 return null;
-                }
-            }  
+        return null;
+    }
+
+    // CHANGED: excluir la propia reserva al validar, para no chocar consigo misma
+    public boolean modificar(int idReserva, Vehiculos nuevoVehiculo) {
+        Reserva r = reservasActivas.get(idReserva);
+        if (r != null) {
+            Map<Integer, Reserva> sinMi = new HashMap<>(reservasActivas);
+            sinMi.remove(idReserva);
+
+            if (ValidarReservas.VehiculoDisponible(
+                    nuevoVehiculo,
+                    r.getFechaInicio(),
+                    r.getFechaFin(),
+                    sinMi)) {
+                r.setVehiculo(nuevoVehiculo);
+                return true;
+            }
         }
-      return null; 
-    } 
-} 
+        return false;
+    }
+
+    public Alquiler confirmarReserva(int idReserva,double tarifaDiaria,Map<String, Cliente> repoClientes,Map<String, Vehiculos> repoVehiculos) {
+        Reserva r = null;
+        for (Reserva x : reservasEnEspera) {
+            if (x.getIdReserva() == idReserva) {
+                r = x;
+                break;
+            }
+        }
+        if (r == null) return null;
+
+        if (!ValidarReservas.VehiculoDisponible(
+                r.getVehiculo(),
+                r.getFechaInicio(),
+                r.getFechaFin(),
+                reservasActivas)) {
+            return null;
+        }
+
+        reservasEnEspera.remove(r);
+        r.setEstado(EstadoReserva.CONFIRMADA); 
+        reservasActivas.put(r.getIdReserva(), r);
+
+        try {
+            return new Alquiler(
+                r,
+                tarifaDiaria,
+                new ArrayList<>(repoClientes.values()),
+                repoVehiculos
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+}

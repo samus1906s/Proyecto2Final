@@ -26,6 +26,15 @@ public class Reserva {
     private Vehiculos vehiculo;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
+    private EstadoReserva estado;
+
+    public Reserva(int id, Cliente cliente, Vehiculos vehiculo, LocalDate ini, LocalDate fin, Map<Integer, Reserva> reservasMap, List<Cliente> clientesList, Map<String, Vehiculos> vehiculosMap) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public Reserva(int id, Cliente cliente, Vehiculos vehiculo, LocalDate ini, LocalDate fin, Map<Integer, Reserva> reservasMap, Map<String, Vehiculos> vehiculosMap, List<Cliente> clientesList) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 
     public int getIdReserva() {
         return idReserva;
@@ -51,8 +60,17 @@ public class Reserva {
         return fechaFin;
     }
 
+    public EstadoReserva getEstado() {
+        return estado;
+    }
 
-    public Reserva(int idReserva,Cliente cliente, Vehiculos vehiculo, LocalDate fechaInicio, LocalDate fechaFin, Map<Integer, Reserva> reservas, Map<String, Vehiculos> vehiculos, List<Cliente> clientes) throws ClienteNoEncontrado, VehiculoNoEncontrado, FechaInicioInvalida, FechasDeReservasIncompletas, DuracionReservaExcedida,VehiculoNoDisponible {
+    public void setEstado(EstadoReserva estado) {
+        this.estado = estado;
+    }
+    
+
+
+    public Reserva(int idReserva,Cliente cliente, Vehiculos vehiculo, LocalDate fechaInicio, LocalDate fechaFin,EstadoReserva estado, Map<Integer, Reserva> reservas, Map<String, Vehiculos> vehiculos, List<Cliente> clientes) throws ClienteNoEncontrado, VehiculoNoEncontrado, FechaInicioInvalida, FechasDeReservasIncompletas, DuracionReservaExcedida,VehiculoNoDisponible {
     
         if (cliente == null || !ValidacionGeneral.ClienteRegistrado(cliente.getCedula(), clientes)) {
          throw new ClienteNoEncontrado();
@@ -83,5 +101,6 @@ public class Reserva {
      this.vehiculo = vehiculo;
      this.fechaInicio = fechaInicio;
      this.fechaFin = fechaFin;
+     this.estado =estado;
     }
 }
